@@ -566,3 +566,29 @@ def save_plant_analysis(request):
             return JsonResponse({'error': str(e)}, status=400)
 
     return JsonResponse({'error': 'Invalid method'}, status=405)
+
+@csrf_exempt
+def nutrient_tolerance_settings(request):
+    """View for nutrient tolerance settings page"""
+    if request.method == 'GET':
+        return render(request, 'crops/nutrient_tolerance_settings.html')
+    
+    elif request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            # Store the settings in session for now (could be moved to database later)
+            request.session['nutrient_tolerance_settings'] = data
+            return JsonResponse({'success': True, 'message': 'Settings saved successfully'})
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+def get_nutrient_tolerance_settings(request):
+    """API endpoint to get current nutrient tolerance settings"""
+    if request.method == 'GET':
+        settings = request.session.get('nutrient_tolerance_settings', {})
+        return JsonResponse(settings)
+    
+    return JsonResponse({'error': 'Method not allowed'}, status=405)

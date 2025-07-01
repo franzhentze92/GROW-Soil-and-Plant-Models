@@ -24,6 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls, name="admin"),
     path('', index_view, name="index"),
     path('plant-analysis/',include('crops.urls')),
+    path('crops/', include('crops.urls')),
     path('soil-analysis/', include('soil_analysis.urls')),
     path('report-generation/', include('reporting.urls')),
     path('api/', include('common.urls')),

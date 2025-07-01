@@ -5,34 +5,69 @@ function getBarColor(value, min, max, nutrientName) {
     console.log('=== getBarColor called ===');
     console.log('Input parameters:', { value, min, max, nutrientName });
     
-    // Define tolerance per nutrient (percentage below min and above max)
-    // Using abbreviated names that match what's extracted from the data
-    const tolerances = {
-        'N': { below: 0.20, above: 0.30 },        // Nitrogen: 20% below, 30% above
-        'P': { below: 0.25, above: 0.25 },        // Phosphorus: 25% below, 25% above
-        'K': { below: 0.20, above: 0.30 },        // Potassium: 20% below, 30% above
-        'Ca': { below: 0.15, above: 0.35 },       // Calcium: 15% below, 35% above
-        'Mg': { below: 0.25, above: 0.35 },       // Magnesium: 10% below, 35% above
-        'S': { below: 0.25, above: 0.25 },        // Sulfur: 25% below, 25% above
-        'Na': { below: 0.30, above: 0.20 },       // Sodium: 30% below, 20% above
-        'Fe': { below: 0.20, above: 0.30 },       // Iron: 20% below, 30% above
-        'Mn': { below: 0.20, above: 0.30 },       // Manganese: 20% below, 30% above
-        'Zn': { below: 0.25, above: 0.25 },       // Zinc: 25% below, 25% above
-        'Cu': { below: 0.25, above: 0.25 },       // Copper: 25% below, 25% above
-        'B': { below: 0.20, above: 0.30 },        // Boron: 20% below, 30% above
-        'Mo': { below: 0.30, above: 0.20 },       // Molybdenum: 30% below, 20% above
-        'Si': { below: 0.25, above: 0.25 },       // Silicon: 25% below, 25% above
-        'Co': { below: 0.25, above: 0.25 }        // Cobalt: 25% below, 25% above
+    // Try to load tolerance settings from localStorage first, then backend
+    let tolerances = {};
+    
+    // First try localStorage
+    const localStorageSettings = localStorage.getItem('nutrientToleranceSettings');
+    if (localStorageSettings) {
+        try {
+            tolerances = JSON.parse(localStorageSettings);
+            console.log('Loaded tolerances from localStorage:', tolerances);
+        } catch (e) {
+            console.error('Error parsing localStorage settings:', e);
+        }
+    }
+    
+    // If no localStorage settings, try to load from backend
+    if (Object.keys(tolerances).length === 0) {
+        // Load from backend asynchronously (for future use)
+        fetch('/crops/api/nutrient-tolerance-settings/')
+            .then(response => response.json())
+            .then(backendSettings => {
+                if (Object.keys(backendSettings).length > 0) {
+                    localStorage.setItem('nutrientToleranceSettings', JSON.stringify(backendSettings));
+                    console.log('Loaded tolerances from backend:', backendSettings);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading from backend:', error);
+            });
+    }
+    
+    // Default tolerances if none found
+    const defaultTolerances = {
+        'N': { below: 0.20, above: 0.30 },
+        'P': { below: 0.25, above: 0.25 },
+        'K': { below: 0.20, above: 0.35 },
+        'Ca': { below: 0.15, above: 0.35 },
+        'Mg': { below: 0.25, above: 0.35 },
+        'S': { below: 0.25, above: 0.25 },
+        'Na': { below: 0.30, above: 0.20 },
+        'Fe': { below: 0.20, above: 0.30 },
+        'Mn': { below: 0.20, above: 0.30 },
+        'Zn': { below: 0.25, above: 0.25 },
+        'Cu': { below: 0.25, above: 0.25 },
+        'B': { below: 0.20, above: 0.30 },
+        'Mo': { below: 0.30, above: 0.20 },
+        'Si': { below: 0.25, above: 0.25 },
+        'Co': { below: 0.25, above: 0.25 }
     };
     
-    // Get tolerance for this nutrient, default to 25% if not found
-    const tolerance = tolerances[nutrientName] || { below: 0.25, above: 0.25 };
-    console.log('Found tolerance for', nutrientName, ':', tolerance);
+    // Get tolerance for this nutrient, use saved settings or defaults
+    const tolerance = tolerances[nutrientName] || defaultTolerances[nutrientName] || { below: 0.25, above: 0.25 };
+    console.log('Using tolerance for', nutrientName, ':', tolerance);
     
+    // Apply tolerance to Django-provided ideal ranges
+    // This keeps the original ideal ranges intact but adjusts color thresholds
     const lower = min * (1 - tolerance.below);
     const upper = max * (1 + tolerance.above);
     
-    console.log(`Color calculation for ${nutrientName}: value=${value}, min=${min}, max=${max}, lower=${lower}, upper=${upper}, tolerance=${JSON.stringify(tolerance)}`);
+    console.log(`Color calculation for ${nutrientName}:`);
+    console.log(`  Django ideal range: ${min} - ${max}`);
+    console.log(`  Tolerance: ${tolerance.below * 100}% below, ${tolerance.above * 100}% above`);
+    console.log(`  Color thresholds: ${lower.toFixed(3)} - ${upper.toFixed(3)}`);
+    console.log(`  Current value: ${value}`);
     
     if (value >= lower && value <= upper) {
         console.log(`Result: GREEN (acceptable)`);
@@ -76,18 +111,12 @@ createRow = function(format, category = '', parenthetical = '', your_level = '',
             
             console.log('Cleaned nutrient name:', nutrientName);
             
-            // Replace the background color in the bar span
+            // Use getBarColor for color (bypass calculateProgress for color)
             const newColor = getBarColor(value, min, max, nutrientName);
             console.log('New color:', newColor);
             
-            const oldRowHtml = rowHtml;
+            // Replace the background color in the bar span (bypass className logic)
             rowHtml = rowHtml.replace(/background:[^;]*;/, 'background:' + newColor + ';');
-            
-            if (oldRowHtml !== rowHtml) {
-                console.log('Row HTML updated successfully');
-            } else {
-                console.log('WARNING: Row HTML was not updated - no background style found');
-            }
         } else {
             console.log('Invalid numeric values, skipping color update');
         }
