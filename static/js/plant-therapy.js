@@ -69,12 +69,12 @@ function getBarColor(value, min, max, nutrientName) {
     console.log(`  Color thresholds: ${lower.toFixed(3)} - ${upper.toFixed(3)}`);
     console.log(`  Current value: ${value}`);
     
-    if (value >= lower && value <= upper) {
-        console.log(`Result: GREEN (acceptable)`);
-        return "#339966"; // green
+    if (value < lower) {
+        return "#ff0000"; // red for deficient
+    } else if (value > upper) {
+        return "#0000FF"; // blue for excessive
     } else {
-        console.log(`Result: RED (outside range)`);
-        return "#ff0000"; // red
+        return "#339966"; // green for optimal
     }
 }
 

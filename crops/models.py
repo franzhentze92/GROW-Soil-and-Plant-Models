@@ -1,5 +1,6 @@
 import os
 from django.db import models
+from django.contrib.postgres.fields import JSONField
 
 
 SAMPLE_TYPE_CHOICES = [
@@ -144,3 +145,15 @@ class InputSample(models.Model):
         return os.path.join(instance.sample_type, filename)
 
     file_input = models.FileField(upload_to=get_upload_path)
+
+
+class GlobalNutrientToleranceSettings(models.Model):
+    settings = models.JSONField(default=dict, blank=True)
+
+    @classmethod
+    def get_solo(cls):
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def __str__(self):
+        return "Global Nutrient Tolerance Settings"

@@ -79,6 +79,17 @@ if errorlevel 1 (
 )
 echo ✓ Dependencies installed
 
+:: Install psycopg2-binary for PostgreSQL support (required for migrations)
+echo.
+echo Installing psycopg2-binary (PostgreSQL driver)...
+pip install psycopg2-binary
+if errorlevel 1 (
+    echo ERROR: Failed to install psycopg2-binary
+    pause
+    exit /b 1
+)
+echo ✓ psycopg2-binary installed
+
 :: Set environment variables in the virtual environment
 echo.
 echo Setting up environment variables...
@@ -90,7 +101,7 @@ set S3_RESPONSE_BUCKET=dummy_bucket
 set S3_CSV_BUCKET=dummy_bucket
 echo ✓ Environment variables set
 
-:: Run migrations
+:: Run migrations (use correct manage.py path if needed)
 echo.
 echo Running database migrations...
 python manage.py migrate

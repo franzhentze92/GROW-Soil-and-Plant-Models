@@ -9,6 +9,7 @@ from crops.utils import process_crop_data, upload_pdf_file_to_s3, read_csv, calc
 from django.contrib import messages
 from analysis_submissions.utils import save_report, get_report_by_id
 from common.views import validate_token
+from .models import GlobalNutrientToleranceSettings
 
 from crops.constants import fertiliser_matrix,REQUIRE_AT_LEAST_X_PERCENT_DEFICIENT,REQUIRE_EXACTLY_Y_PERCENT_DEFICIENT,X_PERCENT_THRESHOLD,Y_PERCENT_THRESHOLD
 
@@ -572,12 +573,12 @@ def nutrient_tolerance_settings(request):
     """View for nutrient tolerance settings page"""
     if request.method == 'GET':
         return render(request, 'crops/nutrient_tolerance_settings.html')
-    
     elif request.method == 'POST':
         try:
             data = json.loads(request.body)
-            # Store the settings in session for now (could be moved to database later)
-            request.session['nutrient_tolerance_settings'] = data
+            obj = GlobalNutrientToleranceSettings.get_solo()
+            obj.settings = data
+            obj.save()
             return JsonResponse({'success': True, 'message': 'Settings saved successfully'})
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
@@ -588,7 +589,6 @@ def nutrient_tolerance_settings(request):
 def get_nutrient_tolerance_settings(request):
     """API endpoint to get current nutrient tolerance settings"""
     if request.method == 'GET':
-        settings = request.session.get('nutrient_tolerance_settings', {})
-        return JsonResponse(settings)
-    
+        obj = GlobalNutrientToleranceSettings.get_solo()
+        return JsonResponse(obj.settings or {}, safe=False)
     return JsonResponse({'error': 'Method not allowed'}, status=405)
