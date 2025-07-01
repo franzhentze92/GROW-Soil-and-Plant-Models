@@ -1,0 +1,1221 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+{{ product_ids|json_script:"productIdsJson" }}
+
+    <style>
+        .bar {
+            left: 102%;
+        }
+    </style>
+    <div class="loader-overlay" id="loader">
+        <div class="loader"></div>
+    </div>
+    <div class="page-padding container-fluid">
+        <div class="row">
+            <div class="col-md-5 col-sm-12">
+                <div class="dashboard-card ">
+                    <h3 class="mb-2 auth-heading"><span>Plant Therapy Report Submission</span></h3>
+                        <p class="auth-text mb-0">View previously submitted plant therapy reports.</p>
+                </div>
+                {% include '../message-card.html' %}
+
+                <div class="dashboard-card">
+                    <div id="nutritionTabsContent">
+                        <!-- Plant Therapy Tab -->
+                        <div class="tab-pane fade show active" id="plant-content" role="tabpanel">
+                            <div class="container">
+                                <form id="inputForm" class="needs-validation" action="" method="post"
+                                    enctype="multipart/form-data" novalidate>
+                                    
+                                    <div class="form-grid">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <div class="form-floating">
+                                                        <input type="text" id="leafCropGroup"  class="form-control" value="" readonly>
+                                                        <label for="crop_group" class="form-label">Selected Crop Group:</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <div class="form-floating">
+                                                        <input id="leafCrop" type="text" id="leafCropGroup"  class="form-control" value="" readonly>
+                                                        <label for="crop" class="form-label">Selected Crop:</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="mb-3">
+                                                    <div class="form-floating">
+                                                        <input id="plantLabType" type="text" id="leafCropGroup"  class="form-control" value="" readonly>
+                                                        <label for="lab_type" class="form-label">Selected Lab Type:</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+        
+                                    <!-- <div class="mb-3">
+                                        <label for="fileInput" class="form-label">File Input:
+                                            <strong>(Image/CSV)</strong></label>
+                                        <input type="file" class="form-control" id="fileInput" name="fileInput" required />
+                                        <div class="invalid-feedback">
+                                            Please upload an input file.
+                                          </div>
+                                    </div> -->
+                                    <div style="text-align: right !important;">
+                                        <button type="submit" class="btn submit-btn px-4" disabled>
+                                            Submitted
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+        
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="form-floating">
+                        <select class="form-select" id="paddockDataSelect" >
+                        <option value="" disabled selected>Please select the table.</option>
+                        </select>
+                        <label for="form-select" class="form-label">Select the paddock to display the corresponding saved recommendation and export:</label>
+                    </div>
+                </div>
+
+                <div class="dashboard-card mt-2">
+                    <div>
+                        <label for="product_description" class="secondary-font-color">Please write a short products description (this description is shared for both fertigation and foliar products):</label>
+                        <label for="product_description">To write bold text, please wrap the text with ** marks on both sides, for example **Nitrogen** will be displayed as <b>Nitrogen</b>.</label>
+                        <textarea 
+                            rows="5" 
+                            cols="50" 
+                            id="product_description" 
+                            class="chart-explanation-input" 
+                            onkeyup="modifyPDFData(
+                                this.value, 
+                                label='product_description', 
+                                level='paddock', 
+                                paddock=getSelectedPaddock()
+                                )"></textarea>
+                    </div>
+                </div>
+
+                <div id="product-selection-wrapper">
+
+                </div>
+
+                <div class="dashboard-card mt-2">
+                    <p class="secondary-font-color mb-0">General Tank Mixing Sequence Instructions:</p>
+                    <ol>
+                        <li class="text-justify">Products will appear in the table cells automatically after selecting them and calculating the cost from the previous steps. After they appear, you can select the products for each category.</li>
+                        <li class="text-justify">It is important to select products before changing the paddock chart. <b>Once the paddock is changed with any checkbox checked, you won't be able to alter the selections.</b></li>
+                    </ol>
+                    <table id="mixingTable" class="table table-bordered">
+                        <thead class="table-header">
+                            <tr>
+                                <th style="width: 15%; padding: 0 5px !important;" class="text-center">Sequence</th>
+                                <th style="width: 15%; padding: 0 5px !important;" class="text-center">Product Description</th>
+                                <th style="width: 35%; padding: 0 5px !important;" class="text-center">Select Products</th>
+                                <th style="width: 35%; padding: 0 5px !important;" class="text-center">Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-light">1</td>
+                                <td class="fw-light" class="text-justify">Least soluble solids</td>
+                                <td class="fw-light"><div class="checkbox-group"></div></td>
+                                <td class="fw-light" class="text-justify">Requires good agitation for several minutes. Do not attempt to dissolve more than 1g SCP per 100 L water, less if adding other inputs as well.</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-light">2</td>
+                                <td class="fw-light" class="text-justify">More soluble solids</td>
+                                <td class="fw-light"><div class="checkbox-group"></div></td>
+                                <td class="fw-light" class="text-justify">May require several minutes of good agitation.</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-light">3</td>
+                                <td class="fw-light" class="text-justify">Liquid solutions</td>
+                                <td class="fw-light"><div class="checkbox-group"></div></td>
+                                <td class="fw-light" class="text-justify">May make previous inputs more difficult to dissolve. May be diluted before adding.</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-light">4</td>
+                                <td class="fw-light" class="text-justify">MMS (micronized mineral solutions)</td>
+                                <td class="fw-light"><div class="checkbox-group"></div></td>
+                                <td class="fw-light" class="text-justify">Pre-mix well before adding. Mix with good agitation to ensure even dispersion.</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-light">5</td>
+                                <td class="fw-light" class="text-justify">Microbial products</td>
+                                <td class="fw-light"><div class="checkbox-group"></div></td>
+                                <td class="fw-light" class="text-justify">Always add microbial products last after the other chemicals, and allow tanks to be free of residues if possible before spraying microbes.</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-light">6</td>
+                                <td class="fw-light" class="text-justify">Spray oil</td>
+                                <td class="fw-light"><div class="checkbox-group"></div></td>
+                                <td class="fw-light" class="text-justify">Essential for success of foliar sprays.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="mb-0"><b>Note:</b> Always perform a jar-test first if unsure of tank compatibility.</p>
+                </div>
+
+                <div class="dashboard-card">
+                    <!-- <div class="d-flex align-items-center justify-content-between mb-3">
+                        <label for="filenameInput">Please enter the the final PDF export file name.</label>
+                            <input class="filename-input" 
+                            type="text" 
+                            id="filenameInput" 
+                            onkeyup="modifyPDFData(this.value, label='title', level='report', paddock=null)" 
+                            placeholder="Exported filename..." 
+                            value="Leaf Analysis Report">  
+                    </div> -->
+
+                    <div class="row d-flex align-items-center justify-content-between mb-3">
+                        <span class="col-md-12 col-sm-12 d-flex align-items-center justify-content-between mb-2">
+                            <label style="margin-right: 20px; width: 80%;" for="switch">Include nutrients breakdown and cost in the report.</label>
+                            <label class="switch">
+                                <input type="checkbox">
+                                <span class="slider round"></span>
+                            </label>
+                        </span>
+                        <span class="col-md-12 col-sm-12 d-flex align-items-center justify-content-between mb-2">
+                            <label style="margin-right: 20px; width: 80%;" for="switch">Include tank mixing sequence instruction table in the report.</label>
+                            <label class="switch switchTable">
+                                <input type="checkbox">
+                                <span class="slider round"></span>
+                            </label>
+                        </span>
+                    </div>
+                    <div class="row d-flex align-items-center justify-content-between mb-3">
+                        <span class="col-md-8 col-sm-12">
+                            <p class="text-justify m-0">Save the current analysis report.</p>
+                        </span>
+                        <span class="col-md-4 col-sm-12">
+                            <button class="btn submit-btn px-4 w-100" onclick="saveAnalysis('{{ report_id }}')">Save Analysis</button>
+                        </span>
+                    </div>
+
+                    <div class="row d-flex align-items-center justify-content-between mb-3">
+                        <span class="col-md-8 col-sm-12">
+                            <p class="text-justify m-0">Note: PDF files can be found directly in the selected downloading folder upon download/printing.</p>
+                        </span>
+                        <span class="col-md-4 col-sm-12">
+                            <button class="btn submit-btn px-4 w-100" onclick="downloadPDF()">Download PDF</button>
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-md-7 col-sm-12 pdf-viewer" id="pdf-viewer">
+                <p class="fw-bold">This section will display the tables, text, and details while bieng edited in the left panel. The tables, text, and any details displayed here will be automatically re-formatted to match the PDF template when exporting.</p>
+                <p class="fw-bold">To start, please upload your files on the left panel, and then proceed with editing following the instructions.</p>
+            </div>
+            <!-- Pre-render a hidden template -->
+            <div id="product-template" style="display: none;">
+                {% include '../reporting/product_selection.html' with product_id="__PRODUCT_ID__" index="__INDEX__" only %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
+    integrity="sha384-IQsoLXlHjGpG9iLW+itdG6vVDT3z7MV3pz6SMNfE1+tEZuJr+Po6w5hZ9GFsm+Y7"
+    crossorigin="anonymous"></script>
+
+<script src="{% static 'js/custom.js' %}"></script>
+<script src="{% static 'js/plant-report.js' %}"></script>
+
+<script defer>
+    const urls = {
+        getProducts: "{% url 'get_products' %}",
+        calculateProductsCost: "{% url 'calculate_products_cost' %}",
+        tokenToUser: "{% url 'token_to_user' %}",
+        saveAnalysis: "{% url 'save_plant_agronomist_report_analysis' %}",
+    };
+
+    /**
+     * Downloads the PDF file with the generated HTML.
+     * @return {null} Returns nothing
+     */
+    function downloadPDF() {
+        console.log(report)
+        
+        // Get the HTML
+        let allPDFPages = `
+        <div class="pdf-container">
+            <img class="first-page-pdf w-100 h-100 m-0 p-0" src="{% static 'images/first-page.png' %}" alt="">
+            <div class="page-break"></div>
+            `; // Initialize an empty string to store the HTML for all paddocks
+        const paddocksWithTables = Object.entries(report.paddocks).filter(([key, paddock]) => paddock.hasOwnProperty('table'));
+
+        paddocksWithTables.forEach(([key, paddock], index) => {
+            let pdfPage = `
+                <div class="m-5">
+                    <div class="container">
+                        <div class="row mb-4">
+                            <div class="document-header-details col-6 w-100 d-flex align-items-center justify-content-between">
+                                <div class="logo">
+                                    <img src="{% static 'images/NTS Logo.webp' %}" alt="">
+                                </div>
+                                <div class="title">
+                                    <h1>Plant Therapy <sup class="sub">TM</sup></h1>
+                                </div>
+                                <div class="logo">
+                                    <img src="{% static 'images/Nutrition_Farming_Logo.webp' %}" alt="">
+                                </div>
+                            </div>
+                        </div>
+                        ${generateUserDetails(report, key)}
+                    </div>
+                    <div class="container mt-4" id="soilAnalysisContainer">
+                        <div class="row">
+                            <div class="col-12">
+                                ${paddock.table}
+                            </div>
+                        </div>
+                    </div>
+                    ${report?.description ? ` 
+                    <div class="container table-notes mt-4">
+                        <div class="row">
+                            <div class="col-12">
+                                <h4 class="fw-b">Notes:</h4>
+                                <p class="text-justify">${report.description}</p>
+                            </div>
+                        </div>
+                    </div>` : ''}    
+                </div>
+                <div class="page-break"></div>
+                `;
+
+            allPDFPages += pdfPage;
+
+            // if (index !== paddocksWithTables.length - 1) {
+            //     pdfPage += `
+            //     <div class="page-break"></div>
+            //     `
+            // }
+        });
+        
+        // PDF pages for products
+        const selectElement = document.getElementById('paddockDataSelect');
+        const paddocks = Array.from(selectElement.options).map(option => option.value);
+        allPDFPages += `
+        <div class="container-fluid full-page">
+            <div class="container page-content">
+                <div class="page-address">
+                    ${report['user']['name']+ " &mdash; " +report['user']['land']+ " &mdash; " +report['user']['date']}
+                </div>
+                <div class="page-title secondary-font-color">
+                    Plant Therapy™ Report
+                </div>
+        `;
+
+        let usedIdx = 1;
+        let pageBreakRule = 2;
+
+        // One paddock per page for either of the checkboxes
+        if (report['include_breakdown_price'] || report['include_mixing_sequence_instructions_table']){
+            pageBreakRule = 1;
+        }
+
+        paddocks.forEach((paddock_name, idx) => {
+            if (paddock_name != ""){
+                let paddock_fertigation_products = report['paddocks'][paddock_name]['fertigation_products'];
+                let paddock_foliar_spray_products = report['paddocks'][paddock_name]['foliar_products'];
+                let paddock_fertigation_products_description = report['paddocks'][paddock_name]['product_description'] || '';
+                let paddock_product_mixing_table = report['paddocks'][paddock_name]['products_mixing_table'] || '';
+
+                // if there are any products, add the page header
+                // if (paddock_fertigation_products?.selected_products || paddock_foliar_spray_products?.selected_products
+                if ( (paddock_fertigation_products.length > 0 && !_isEmpty(paddock_fertigation_products[0].selected_products)) || 
+                        (paddock_foliar_spray_products.length > 0 && !_isEmpty(paddock_foliar_spray_products[0].selected_products)) ){
+                    allPDFPages += `
+                    <p class="secondary-font-color mb-0 mt-3" style="text-decoration: underline"><b><i>${usedIdx}. ${paddock_name}</i></b></p>
+                    <p class="mb-3 text-justify">${paddock_fertigation_products_description.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>") || ""}</p>
+                    `;
+                }
+                
+                for (let index = 0; index < paddock_fertigation_products.length; index++) {
+
+                    if (paddock_fertigation_products[index]?.selected_products){
+                        let paddock_fertigation_products_selected = paddock_fertigation_products[index]['selected_products'];
+
+                        let productsSummaryTags = '';
+                        Object.keys(paddock_fertigation_products_selected).forEach(key => {
+                            let product = paddock_fertigation_products_selected[key];
+                            productsSummaryTags += `<li><b>${key}</b> at ${product.rate} ${product.unit}</li>`
+                        });
+
+                        let fertigation_products_div = `
+                                <p class="m-0" style="text-decoration: underline;"><i>In a single fertigation (drip irrigation) apply the following:</i></p>
+                                <ul class="mt-0 mb-1">
+                                    ${productsSummaryTags}
+                                </ul>
+                        `;
+
+                        if (report['include_breakdown_price']){
+                            // List of nutrients
+                            let nutrientsBreakdownTags = '';
+                            Object.keys(paddock_fertigation_products[index].nutrient_breakdown_combined).forEach(nutrient => {
+                                let nutrientItem = paddock_fertigation_products[index].nutrient_breakdown_combined[nutrient];
+                                nutrientsBreakdownTags += `
+                                <tr style="border: none !important;">
+                                    <td style="text-align: left; border: none !important;">${nutrientItem['Nutrient']}</td>
+                                    <td style="text-align: left; border: none !important;">${nutrientItem['kg/ha'].toFixed(4)}</td>
+                                    <td style="text-align: left; border: none !important;">${nutrientItem['ppm'].toFixed(4)}</td>
+                                </tr>`
+                            });
+
+                            let nutrientPerProductTags = '';
+                            Object.keys(paddock_fertigation_products[index].nutrient_breakdown_product).forEach(product => {
+                                let productResult = paddock_fertigation_products[index].nutrient_breakdown_product[product];
+                                
+                                nutrientPerProductTags += `
+                                    <p class="fw-bold mb-0" style="font-size: 11px;">Product Name: ${product}</p>
+                                    ${productResult.length > 0 ? 
+                                        productResult.map(item => `
+                                            <p class="mb-0" style="font-size: 11px;">
+                                                Nutrient: ${item['Nutrient']} &ensp;
+                                                kg/ha: ${typeof item['kg/ha'] === 'number' ? item['kg/ha'].toFixed(4) : item['kg/ha']} &ensp;
+                                                ppm: ${typeof item['ppm'] === 'number' ? item['ppm'].toFixed(4) : item['ppm']}
+                                            </p>
+                                        `).join('') 
+                                        : `<p style="font-size: 11px;">No nutrients details found.</p>`
+                                    }
+                                    
+                                `;
+                            });
+
+                            fertigation_products_div += `
+                                <div class="d-flex align-items-start justify-content-between flex-row">
+                                    <span>
+                                        <p class="mt-1 mb-0 fw-bold">Combined Nutrient Breakdown:</p>
+                                        <table style="border-collapse: collapse; width: auto; border: none !important;" class="combined_nutrient_breakdown_table">
+                                            <thead>
+                                                <tr>
+                                                    <th style="text-align: left; padding: 0 15px 0 0; width: 100px !important; background-color: #fff;">Nutrient</th>
+                                                    <th style="text-align: left; padding: 0 15px 0 0; width: 100px !important; background-color: #fff;">kg/ha</th>
+                                                    <th style="text-align: left; padding: 0 15px 0 0; width: 100px !important; background-color: #fff;">ppm</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            ${nutrientsBreakdownTags}
+                                            </tbody>
+                                        </table>
+                                    </span>
+                                    <span>
+                                        <p class="mt-1 mb-0 fw-bold">Nutrient Breakdown Per Product:</p>
+                                        ${nutrientPerProductTags}    
+                                    </span>
+                                </div>
+
+                                <div class="d-flex align-items-center justify-content-between mt-3 mb-3">
+                                    <p class="m-0 w-100">Total cost: $${paddock_fertigation_products[index].total_cost.toFixed(2)}</p>
+                                </div>
+                            `;
+                        }
+
+                        allPDFPages += fertigation_products_div;
+                    }
+                }
+
+                for (let index = 0; index < paddock_foliar_spray_products.length; index++) {
+                    if(paddock_foliar_spray_products[index]?.selected_products){
+                        let paddock_foliar_spray_selected = paddock_foliar_spray_products[index]['selected_products'];
+                        let productsSummaryTags = '';
+
+                        Object.keys(paddock_foliar_spray_selected).forEach(key => {
+                            let product = paddock_foliar_spray_selected[key];
+                            productsSummaryTags += `<li><b>${key}</b> at ${product.rate} ${product.unit}</li>`
+                        });
+
+                        let foliar_spray_div = `
+                            <p class="m-0" style="text-decoration: underline;"><i>In a single foliar spray (drip irrigation) apply the following:</i></p>
+                            <ul class="mt-0 mb-1">
+                                ${productsSummaryTags}
+                            </ul>
+                        `;
+
+                        if (report['include_breakdown_price']){
+                            // List of nutrients
+                            let nutrientsBreakdownTags = '';
+                            Object.keys(paddock_foliar_spray_products[index].nutrient_breakdown_combined).forEach(nutrient => {
+                                let nutrientItem = paddock_foliar_spray_products[index].nutrient_breakdown_combined[nutrient];
+                                nutrientsBreakdownTags += `
+                                <tr style="border: none !important;">
+                                    <td style="text-align: left; border: none !important;">${nutrientItem['Nutrient']}</td>
+                                    <td style="text-align: left; border: none !important;">${nutrientItem['kg/ha'].toFixed(4)}</td>
+                                    <td style="text-align: left; border: none !important;">${nutrientItem['ppm'].toFixed(4)}</td>
+                                </tr>`
+                            });
+
+                            let nutrientPerProductTags = '';
+                            Object.keys(paddock_foliar_spray_products[index].nutrient_breakdown_product).forEach(product => {
+                                let productResult = paddock_foliar_spray_products[index].nutrient_breakdown_product[product];
+                                
+                                nutrientPerProductTags += `
+                                    <p class="fw-bold mb-0" style="font-size: 11px;">Product Name: ${product}</p>
+                                    ${productResult.length > 0 ? 
+                                        productResult.map(item => `
+                                            <p class="mb-0" style="font-size: 11px;">
+                                                Nutrient: ${item['Nutrient']} &ensp;
+                                                kg/ha: ${typeof item['kg/ha'] === 'number' ? item['kg/ha'].toFixed(4) : item['kg/ha']} &ensp;
+                                                ppm: ${typeof item['ppm'] === 'number' ? item['ppm'].toFixed(4) : item['ppm']}
+                                            </p>
+                                        `).join('') 
+                                        : `<p style="font-size: 11px;">No nutrients details found.</p>`
+                                    }
+                                    
+                                `;
+                            });
+
+                            foliar_spray_div += `
+                            <div class="d-flex align-items-start justify-content-between flex-row">
+                                <span>
+                                    <p class="mt-1 mb-0 fw-bold">Combined Nutrient Breakdown:</p>
+                                    <table style="border-collapse: collapse; width: auto; border: none !important;" class="combined_nutrient_breakdown_table">
+                                        <thead>
+                                            <tr>
+                                                <th style="text-align: left; padding: 0 15px 0 0; width: 100px !important; background-color: #fff;">Nutrient</th>
+                                                <th style="text-align: left; padding: 0 15px 0 0; width: 100px !important; background-color: #fff;">kg/ha</th>
+                                                <th style="text-align: left; padding: 0 15px 0 0; width: 100px !important; background-color: #fff;">ppm</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        ${nutrientsBreakdownTags}
+                                        </tbody>
+                                    </table>
+                                </span>
+                                <span>
+                                    <p class="mt-1 mb-0 fw-bold">Nutrient Breakdown Per Product:</p>
+                                    ${nutrientPerProductTags}    
+                                </span>
+                            </div>
+                            
+                            <div class="d-flex align-items-center justify-content-between mt-3 mb-3">
+                                <p class="m-0 w-100">Total cost: $${paddock_foliar_spray_products[index].total_cost.toFixed(2)}</p>
+                            </div>
+                            `;
+                        }
+
+                        allPDFPages += foliar_spray_div;
+                    }
+
+                }
+
+                // After the listing of fertigation and foliar spray products, we can add the mixing sequence instructions table
+                if (paddock_product_mixing_table != "" && report['include_mixing_sequence_instructions_table']){
+                    allPDFPages += `
+                        <div class="mt-4">
+                            <p class="mb-2" style="text-decoration: underline"><i>General Tank Mixing Sequence Instructions:</i></p>
+                            ${paddock_product_mixing_table}
+                            <p class="mt-2"><b>Note:</b> Always perform a jar-test first if unsure of tank compatibility.</p>
+                        </div>
+                    `
+                }
+
+                if ((
+                        usedIdx % pageBreakRule == 0
+                    ) && (
+                        !_isEmpty(paddock_fertigation_products[paddock_fertigation_products.length - 1]?.selected_products) || 
+                        !_isEmpty( paddock_foliar_spray_products[paddock_foliar_spray_products.length - 1]?.selected_products) 
+                    )){
+                    // Check if any of the next paddocks have products
+                    // let hasNextProducts = paddocks.slice(idx + 1).some(nextPaddockName => {
+                    //     let nextFertigationProducts = report[nextPaddockName]?.['fertigation_products']?.selected_products;
+                    //     let nextFoliarSprayProducts = report[nextPaddockName]?.['foliar_products']?.selected_products;
+                    //     return nextFertigationProducts || nextFoliarSprayProducts;
+                    // });
+                    
+                    // we add 2 paddocks per page, so we add a page break after 2 paddocks
+                    // end the page first then add a page break
+                    allPDFPages += `
+                            </div>
+                        </div>
+                        ${ (usedIdx != paddocks.length) ? '<div class="page-break"></div>' : ``}
+                        `;
+                    // </div>
+                    // ${ hasNextProducts ? '<div class="page-break"></div>' : ``}
+                    
+                    // start a new page
+                    allPDFPages += `
+                        <div class="container-fluid full-page">
+                            <div class="container page-content">
+                                <div class="page-address">
+                                    ${report['user']['address'] != "" ? report['user']['address']+" - " : ""} ${report['user']['date']}
+                                </div>
+                        `;
+                }
+
+                usedIdx += 1;
+            }
+        })
+
+        allPDFPages += `
+                <p ><i>Please refer to product label or PIS for alternate application rates.</i></p>
+                <p class="mt-4" style="text-align: center; color: #eee;"> END OF REPORT </p>
+
+                </div>
+
+                <div class="page-footer">
+                    <p class="text-justify">Any recommendations provided by Soil Therapy P/L are advice only. As no control can be exercised over storage, 
+                        handling, mixing application or use, or weather, plant or soil conditions before, during or after application (all of 
+                        which may affect the performance of our program), no responsibility for, or liability for any failure in performance, 
+                        losses, damages, or injuries (consequential or otherwise), arising from such storage, mixing, application, or use will 
+                        be accepted under any circumstances whatsoever. The buyer assumes all responsibility for the use of any of our 
+                        products.</p>
+                </div>
+            </div>
+        </div>`;
+
+        // Create the main window
+        const html_template = `
+        <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>${report['title']}</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" id="bootstapCSS">
+                <link rel="stylesheet" href="{% static 'css/table.css' %}" id="tableCSS">
+            </head>
+            <style>
+                table {
+                    width: 100% !important;
+                    border-collapse: separate !important;
+                    border-spacing: 0;
+                    page-break-inside: avoid !important;
+                    break-inside: avoid !important;
+                    page-break-before: auto !important;
+                    break-before: auto !important;
+                    page-break-after: auto !important;
+                    break-after: auto !important;
+                }
+
+                table tbody {
+                    border: 1px solid #1b1c1d !important;
+                }
+
+                table tr,
+                table td,
+                table th,
+                table tbody {
+                    border: none !important;
+                    background: transparent !important;
+                    box-shadow: none !important;
+                    outline: none !important;
+                    padding: 1px 2px !important;
+                    font-size: 10px !important;
+                }
+
+                .table-header th:first-child,
+                .table-header th:nth-child(2),
+                .table-header th:nth-child(3),
+                .table-header th:nth-child(4),
+                .table-header th:nth-child(5),
+                .table-header th:nth-child(6) {
+                    border: 1px solid #1b1c1d !important;
+                    border-right: none !important;
+                }
+
+                .table-header th:nth-child(6) {
+                    border-right: 1px solid #1b1c1d !important;
+                }
+
+                tbody td:nth-child(1), tbody td:nth-child(2), tbody td:nth-child(3) {
+                    border: 1px solid #1b1c1d !important;
+                    border-right: none !important;
+                    border-bottom: none !important;
+                }
+
+                tbody td:nth-child(4), tbody td:nth-child(5), tbody td:nth-child(6) {
+                    border-top: none !important;
+                    border-bottom: none !important;
+                    border-left: 1px solid #1b1c1d !important; // 2px
+                    border-right: none !important;
+                }
+
+                tbody td:nth-child(4) { 
+                    border-left: 1px solid #1b1c1d !important; // 2px
+                }
+
+                tbody td:nth-child(6) { 
+                    border-right: 1px solid #1b1c1d !important; // 2px
+                }
+
+                table tr:first-child td:nth-child(1),
+                table tr:first-child td:nth-child(2),
+                table tr:first-child td:nth-child(3) {
+                    border-top: none !important;
+                }
+
+                
+                table tr:last-child td:nth-child(1),
+                table tr:last-child td:nth-child(2),
+                table tr:last-child td:nth-child(3),
+                table tr:last-child td:nth-child(4),
+                table tr:last-child td:nth-child(5),
+                table tr:last-child td:nth-child(6) {
+                    border-bottom: 1px solid #1b1c1d !important; // 2px
+                }
+
+                tr.base-saturations-header td:nth-child(2),
+                tr.base-saturations-header td:nth-child(3),
+                tr.base-saturations-header td:nth-child(4){
+                    border-top: none !important;
+                    border-bottom: none !important;
+                    border-left: 1px solid #1b1c1d !important;
+                    border-right: 1px solid #1b1c1d !important;
+                }
+
+                #userData__address_span {
+                    display: block !important;
+                    white-space: pre-wrap;
+                    height: max-content !important;
+                    font-size: 10px !important;
+                    font-family: 'Arial', sans-serif;
+                    font-weight: normal !important;
+                    color: #000 !important;
+                }
+
+                input,
+                textarea,
+                #userData__address_span {
+                    border: none !important;
+                    padding: 0 !important;
+                    font-size: 10px !important;
+                }
+
+                label {
+                    width: 90px !important;
+                }
+
+                textarea#userData__address {
+                    display: none !important;
+                }
+
+                .user-details-header {
+                    width: 70%;
+                }
+
+                .document-header-details .field-wrapper {
+                    justify-content: space-between;
+                }
+
+                table.combined_nutrient_breakdown_table,
+                table.combined_nutrient_breakdown_table tbody tr, 
+                table.combined_nutrient_breakdown_table tbody tr td,{
+                    border: none !important;
+                    border-width: 0 !important;
+                    border-style: none !important;
+                    border-color: transparent !important;
+                    box-shadow: none !important;
+                    outline: none !important;
+                }
+
+                /* Specific Mixing table CSS since it has different structure */
+                #mixingTable .table-header th,
+                #mixingTable tbody td {
+                    border: 1px solid #1b1c1d !important;
+                    border-bottom: none !important;
+                }
+
+                #mixingTable tr:last-child td:nth-child(-n+6) {
+                    border-bottom: 1px solid #1b1c1d !important; /* originally 2px */
+                }
+
+                .bar {
+                    left: 103% !important;
+                }
+
+                </style>
+
+            <body>
+                ${allPDFPages}
+            </body>
+            </html>
+        `;
+
+        /**
+         * 
+         * 
+         * 
+            .table-bordered > thead > tr > th, .table-bordered > tbody, .table-bordered > tfoot {
+                border: 2px solid #000 !important;
+            }
+
+            .table-header th:first-child, .table-header th:nth-child(2), .table-header th:nth-child(3), .table-header th:nth-child(4), .table-header th:nth-child(5), .table-header th:nth-child(6) {
+                border-top: 2px solid #000 !important;
+                border-bottom: none !important;
+                border-left: 1px solid #000 !important;
+                border-right: 1px solid #000 !important;
+
+            }
+
+            .table-header th:first-child{
+                border-left: 2px solid #000 !important;
+            }
+
+            .table-header th:nth-child(6) { 
+                border-right: 2px solid #000 !important;
+            }
+        */
+        
+        // // Create a print window
+        // const pdfwindow = window.open('', '', 'width=800,height=600');
+        // pdfwindow.document.write(html_template);
+        // pdfwindow.document.close();
+                    
+
+        // pdfwindow.onload = () => {
+        //     pdfwindow.print();
+        //     setTimeout(() => {
+        //         pdfwindow.close();
+        //     }, 300);
+        // };
+
+        // Create an iframe for printing
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        iframeDoc.open();
+        iframeDoc.write(html_template);
+        // iframeDoc.title = report['title'];  // Set the title for the PDF filename
+        iframeDoc.close();
+
+        iframe.onload = () => {
+            iframe.contentWindow.focus(); // Make sure the iframe is focused for printing
+            iframe.contentWindow.print();
+            setTimeout(() => {
+                document.body.removeChild(iframe);
+            }, 300);
+        };
+
+
+
+        // const container = document.createElement('div');
+        // container.innerHTML = html_template;
+                
+        // const opt = {
+        //     margin: 0.3,
+        //     filename: `${report['title']}.pdf`,
+        //     image: { type: 'jpeg', quality: 0.98 },
+        //     html2canvas: { 
+        //         scale: 2,
+        //         useCORS: true,        
+        //         scrollY: 0,
+        //         scrollX: 0
+        //     },
+        //     jsPDF: { 
+        //         unit: 'in', 
+        //         format: 'a4', 
+        //         orientation: 'portrait',
+        //         compress: true,
+        //     },
+        //     pagebreak: { 
+        //         mode: ['avoid-all', 'css', 'legacy'],
+        //         avoid: ['table', 'img', '.table-responsive'],
+        //         before: ['.page-break'],
+        //         after: ['.page-break']
+        //     }
+        // };
+
+        // Use html2pdf to convert the element to PDF and trigger download
+        // html2pdf()
+        //     .from(container)
+        //     .set(opt)
+        //     .toPdf()
+        //     .get('pdf')
+        //     .then((pdf) => {
+        //         // Add page numbers
+        //         // const totalPages = pdf.internal.getNumberOfPages();
+        //         // for (let i = 1; i <= totalPages; i++) {
+        //         //     pdf.setPage(i);
+        //         //     pdf.setFontSize(10);
+        //         //     pdf.text(`Page ${i} of ${totalPages}`, 
+        //         //         pdf.internal.pageSize.getWidth() - 1, 
+        //         //         pdf.internal.pageSize.getHeight() - 0.5);
+        //         // }
+        //     })
+        //     .save();
+    }
+
+    
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        // when the dashboard is loaded, set up the token in the cookies
+        // Check if the user is logged in using the token passed from the URL
+        const token = getQueryParam('token');
+        if (token) {setCookie('api_bearer', token, 365)}
+
+        // Get the report data from the server
+        const user_data         = JSON.parse('{{ report|safe|escapejs }}');
+        report                  = user_data.report_data;
+        console.log(report);
+
+        // Event listner for including nutrients breakdown
+        document.querySelector('.switch input[type="checkbox"]').addEventListener('change', (event) => {
+            report['include_breakdown_price'] = event.target.checked;
+        });
+
+        // Event listner for including mixing sequece instructions table
+        document.querySelector('.switchTable input[type="checkbox"]').addEventListener('change', (event) => {
+            report['include_mixing_sequence_instructions_table'] = event.target.checked;
+        });
+
+        // Event listner for the checkbox elements inside te mixing table rows
+        document.querySelectorAll('.checkbox-group').forEach(group => {
+            group.addEventListener('change', () => {
+                getProductMixingTableSelections();
+            });
+        });
+
+        // --------------------------- Show the loader ---------------------------
+        showLoader();
+        
+        // --------------------------- Populate dropdown ---------------------------
+        populateTableSelectionDropdown(report?.paddocks)
+        let selectedPaddock = getSelectedPaddock();
+
+        // --------------------------- Setting up form values ---------------------------     
+        document.getElementById('leafCropGroup').value = report.leafCropGroup; 
+        document.getElementById('leafCrop').value = report.leafCrop;
+        document.getElementById('plantLabType').value = report.plantLabType;
+        document.getElementById('product_description').value = report['paddocks'][selectedPaddock]?.product_description || '';
+
+        // --------------------------- Set Up Products Selection ---------------------------
+        const paddockObject = report?.paddocks?.[selectedPaddock];
+        
+        const paddockObjectFertigationProducts = paddockObject?.fertigation_products || [];
+        const paddockObjectFoliarProducts = paddockObject?.foliar_products || [];
+
+        // Combine both arrays with a type tag
+        const allProducts = [
+            ...paddockObjectFertigationProducts.map((product, index) => ({ product, index, type: 'fertigation' })),
+            ...paddockObjectFoliarProducts.map((product, index) => ({ product, index, type: 'foliar' }))
+        ];
+
+        allProducts.forEach(async (item, i) => {
+            const { product, index, type } = item;
+            const nextItem = allProducts[i + 1];
+
+            const product_id = `${type}-products`;
+
+            const template = document.getElementById('product-template').innerHTML;
+            const newHtml = template
+                .replace(/__PRODUCT_ID__/g, product_id.split('-')[0])
+                .replace(/__INDEX__/g, index);
+
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = newHtml;
+
+            let newCard = null;
+
+            if (!nextItem || type !== nextItem.type) {
+                newCard = tempDiv;
+            }else {
+                newCard = tempDiv.querySelector(`#${product_id}-dashboard-card-${index}`);
+            }
+
+            document.getElementById('product-selection-wrapper').appendChild(newCard);
+
+            const data = await new Promise((resolve, reject) => {
+                $.ajax({
+                    url: urls.getProducts,
+                    method: 'GET',
+                    success: resolve,
+                    error: reject
+                });
+            });
+
+            PRODUCT_PRICES = data['product_prices'];
+            CONVERSION_FACTORS = data['conversion_factors'];
+            AREA_CONVERSION_FACTORS = data['area_conversion_factors'];
+
+            let areaUnitTags = Object.keys(AREA_CONVERSION_FACTORS).map(unit =>
+                `<option value="${unit}" ${unit === product?.area_unit ? 'selected' : ''}>${unit}</option>`
+            ).join('');
+            document.getElementById(`${product_id}-table-area-treated-units-${index}`).innerHTML = areaUnitTags;
+            document.getElementById(`${product_id}-table-area-treated-value-${index}`).value = product?.area || '';
+
+            const selectedProductsTableBody = document.getElementById(`${product_id}-table-body-${index}`);
+            selectedProductsTableBody.innerHTML = '';
+
+            const selectedProduct = product?.selected_products || {};
+            let tableContent = '';
+
+            Object.entries(selectedProduct).forEach(([key, value]) => {
+                let productInfo = PRODUCT_PRICES[key];
+                if (!productInfo) return;
+
+                let productSizesTags = Object.keys(productInfo).map(size =>
+                    `<option value="${size}" ${size === value?.size ? 'selected' : ''}>${size}</option>`
+                ).join('');
+
+                let unitTags = Object.keys(CONVERSION_FACTORS).map(unit =>
+                    `<option value="${unit}" ${unit === value?.unit ? 'selected' : ''}>${unit}</option>`
+                ).join('');
+
+                if (product_id.includes("foliar")) {
+                    unitTags += `<option value="L of product per L of water" ${value?.unit === 'L of product per L of water' ? 'selected' : ''}>L of product per L of water</option>`;
+                }
+
+
+                tableContent += `
+                <tr>
+                    <td>${key}</td>
+                    <td>
+                        <select class="form-select">
+                            ${productSizesTags}
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" class="form-control" value="${value?.rate || ''}"/>
+                    </td>
+                    <td>
+                        <select class="form-select unit-select">
+                            <option value="">Select Unit</option>
+                            ${unitTags}
+                        </select>
+                    </td>
+                </tr>`;
+            });
+
+            selectedProductsTableBody.innerHTML = tableContent;
+
+            setTimeout(() => getProductsAndPopulateList(`${product_id}-${index}`), 200);
+            setTimeout(() => $(`#${product_id}-${index}`).empty().trigger("chosen:updated"), 100);
+            setTimeout(() => $(`#${product_id}-${index}`).val(Object.keys(selectedProduct)).trigger('chosen:updated'), 500);
+        })
+
+        // --------------------------- Update the mixing table ---------------------------
+        await updateProductMixingTableView()
+
+        // --------------------------- Clear the PDF Viewer ---------------------------
+        document.getElementById('pdf-viewer').innerHTML = ``;
+
+        // --------------------------- Populate the PDF Viewer ---------------------------
+        let userDataTag = generateUserDetails(report, paddock=null, disabled=true);
+        document.getElementById('pdf-viewer').innerHTML += `<div class="pdf-viewer-table-wrapper">${userDataTag}</div>`;
+                    
+        // --------------------------- Generate tables for all data keys ---------------------------
+        for([key, val] of Object.entries(report?.paddocks)) {
+
+            document.getElementById('pdf-viewer').innerHTML += `<div class="pdf-viewer-table-wrapper" id="pdf-viewer-${key.replace(/ /g,"___")}">
+                <p>PADDOCK: ${key}</p>    
+                ${report?.paddocks[key]?.table}
+            </div>`;
+            document.getElementById(`pdf-viewer-${key.replace(/ /g,"___")}`).innerHTML += `
+            <p class="multi-line-text" id="description-${key.replace(/ /g,"___")}"></p>
+            <ul class="multi-line-text" id="products-${key.replace(/ /g,"___")}"></ul>
+            `;
+        }
+        
+        // Hide the loader
+        hideLoader();
+    });
+
+    document.getElementById("paddockDataSelect").addEventListener("change", function() {
+        // If the description text exists, replace all <b></b> bolding tags with **text** for the user to see.
+        setTimeout(()=>{
+            let fieldText = report['paddocks'][this.value]['product_description'] ? report['paddocks'][this.value]['product_description'].replace(/<b>(.*?)<\/b>/g, "**$1**") : "";
+            document.getElementById('product_description').value = fieldText;
+        }, 100)
+
+        // Update the mixing table with or without products at the beginning since we can post-process it later
+        // If no products, it should be empty.
+        updateProductMixingTableView()
+
+        // Reset the product selection wrapper
+        document.getElementById(`product-selection-wrapper`).innerHTML = '';
+        
+        for (product_id of productIds){
+            // note that here we add -products since it is passes without it from the server
+            // Update the selected products with the paddock data
+            productsList = report['paddocks'][this.value][`${product_id}_products`] || [];
+
+            if (productsList.length > 0){                  
+                // Iterating over each product list, inside the list of lists (productsList)
+                for (let index = 0; index < productsList.length; index++) {
+
+                    if (document.getElementById(`${product_id}-products-dashboard-card-${index}`) == null){
+                        // If the table body does not exist, create it
+                        const template = document.getElementById('product-template').innerHTML;
+                        const newHtml = template
+                        .replace(/__PRODUCT_ID__/g, product_id.split('-')[0])
+                        .replace(/__INDEX__/g, index);
+
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = newHtml;
+
+                        // let newCard = null;
+
+                        // if (allProducts[index+1].type != type){
+                        //     newCard = tempDiv;
+                        // }else {
+                        //     newCard = tempDiv.querySelector(`#${product_id}-dashboard-card-${index}`);
+                        // }
+
+                        // Select only the dashboard card without the footer
+                        const newCard = tempDiv.querySelector(`#${product_id}-products-dashboard-card-${index}`);
+
+                        // document.getElementById(`${product_id}-products-dashboard-card-${index-1}`).parentNode.insertBefore(
+                        //     newCard,
+                        //     document.getElementById(`${product_id}-products-dashboard-card-${index-1}`).nextSibling
+                        // )
+                        document.getElementById('product-selection-wrapper').appendChild(newCard);
+                    }
+
+                    // List of products
+                    let productsSummaryTags = '';
+                    Object.keys(productsList[index].selected_products).forEach(key => {
+                        let product = productsList[index]?.selected_products[key];
+                        productsSummaryTags += `<li><b>${key}</b> at ${product.rate} ${product.unit}</li>`
+                    });
+
+                    // List of nutrients
+                    let nutrientsBreakdownTags = '';
+                    Object.keys(productsList[index].nutrient_breakdown_combined).forEach(nutrient => {
+                        let nutrientItem = productsList[index].nutrient_breakdown_combined[nutrient];
+                        nutrientsBreakdownTags += `
+                        <tr style="border: none !important;">
+                            <td style="text-align: left; border: none !important;">${nutrientItem['Nutrient']}</td>
+                            <td style="text-align: left; border: none !important;">${nutrientItem['kg/ha'].toFixed(4)}</td>
+                            <td style="text-align: left; border: none !important;">${nutrientItem['ppm'].toFixed(4)}</td>
+                        </tr>`
+                    });
+
+                    let nutrientPerProductTags = '';
+                    Object.keys(productsList[index].nutrient_breakdown_product).forEach(product => {
+                        let productResult = productsList[index].nutrient_breakdown_product[product];
+                        
+                        nutrientPerProductTags += `
+                            <p class="fw-bold mb-0">Product Name: ${product}</p>
+                            ${productResult.length > 0 ? 
+                                productResult.map(item => `
+                                    <p class="mb-0">
+                                        Nutrient: ${item['Nutrient']} &ensp;
+                                        kg/ha: ${typeof item['kg/ha'] === 'number' ? item['kg/ha'].toFixed(4) : item['kg/ha']} &ensp;
+                                        ppm: ${typeof item['ppm'] === 'number' ? item['ppm'].toFixed(4) : item['ppm']}
+                                    </p>
+                                `).join('') 
+                                : `<p>No nutrients details found.</p>`
+                            }
+                            
+                        `;
+                    });
+
+                    document.getElementById(`${product_id}-products-table-wrapper-${index}`).innerHTML = `
+                    
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <p class="m-0 w-100">Total cost: $${productsList[index].total_cost.toFixed(2)}</p>
+                        </div>
+                        `;
+
+                    document.getElementById(`${product_id}-products-table-summary-${index}`).innerHTML = `
+                        <p class="secondary-font-color mb-0 mt-3"><b><i>Paddock: ${this.value}</i></b></p>
+                        <p class="mb-0">${report['paddocks'][this.value]?.product_description ? report['paddocks'][this.value]?.product_description.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>"):""}</p>
+
+                        <p class="mt-3" style="text-decoration: underline;"><b><i>In a single ${product_id} (drip irrigation) apply the following:</i></b></p>
+                        <ul class="mt-3">
+                            ${productsSummaryTags}
+                            </ul>
+
+                        <div class="d-flex align-items-start justify-content-between flex-row">
+                            <span>
+                                <p class="mt-3 mb-0 fw-bold">Combined Nutrient Breakdown:</p>
+                                <table style="border-collapse: collapse; width: auto; border: none !important;" class="combined_nutrient_breakdown_table">
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align: left; padding: 0 15px 0 0; width: 100px !important; background-color: #fff;">Nutrient</th>
+                                            <th style="text-align: left; padding: 0 15px 0 0; width: 100px !important; background-color: #fff;">kg/ha</th>
+                                            <th style="text-align: left; padding: 0 15px 0 0; width: 100px !important; background-color: #fff;">ppm</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    ${nutrientsBreakdownTags}
+                                    </tbody>
+                                </table>
+                            </span>
+                            <span>
+                                <p class="mt-3 mb-0 fw-bold">Nutrient Breakdown Per Product:</p>
+                                ${nutrientPerProductTags}    
+                            </span>
+                        </div>
+                        `;
+
+                    document.getElementById(`${product_id}-products-calculate-cost-btn-${index}`).style.display = 'none';
+                    document.getElementById(`${product_id}-products-form-${index}`).style.display = 'none';
+                    
+                    if (document.getElementById(`${product_id}-products-add-more-button`)){
+                        document.getElementById(`${product_id}-products-add-more-button`).style.display = 'none';
+                    }
+
+                    document.getElementById(`product_description`).value = ""; // remove the description from the input text
+
+                    // note that here we add -products since it is passes without it from the server
+                    // setTimeout(()=>{
+                    //     $(`#${product_id}-products`).prop("disabled", true).trigger("chosen:updated");
+                    // }, 300)
+                }
+
+                // Replace the table with the post processed one
+                if (report['paddocks'][this.value]['products_mixing_table'] != "" && report['paddocks'][this.value]['products_mixing_table'] != undefined) {
+                    const mixingTableEl = document.getElementById('mixingTable');
+                    if (mixingTableEl) {
+                        mixingTableEl.outerHTML = report['paddocks'][this.value]['products_mixing_table'] || "";
+                    }
+                }
+
+            } else {
+                // Note that here we add -products since it is passes without it from the server
+                // Update the selected products with the paddock data
+        
+                // Note that we don't need to iterate over the productsList since this function is called to reset the form
+                // so when we access elements as `${product_id}-products-table-wrapper` we can access directly the 0th index.
+                const template = document.getElementById('product-template').innerHTML;
+                const newHtml = template
+                .replace(/__PRODUCT_ID__/g, product_id)
+                .replace(/__INDEX__/g, 0);
+
+                // Insert the template into the DOM
+                document.getElementById(`product-selection-wrapper`).innerHTML += newHtml;
+
+                selectedProducts = {};
+                setTimeout(()=> {
+                    getProductsAndPopulateList(`fertigation-products-0`);
+                }, 300)
+
+                setTimeout(()=> {
+                    getProductsAndPopulateList(`foliar-products-0`);
+                }, 300)
+
+                setTimeout(()=> {
+                    $(`#${product_id}-products-0`).empty().trigger("chosen:updated");
+                }, 300)
+
+            }
+        }
+    });
+        
+</script>
+{% endblock %}

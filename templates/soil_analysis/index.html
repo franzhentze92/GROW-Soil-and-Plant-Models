@@ -1,0 +1,1919 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <!-- Apple Touch Icon (for iOS devices) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"  />
+    <link rel="apple-touch-icon" href="{% static 'images/NTS Logo.webp' %}">
+    <!-- Apple Touch Icon for different sizes (optional for better resolution support) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/NTS Logo.webp' %}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'images/NTS Logo.webp' %}">
+    <link rel="apple-touch-icon" sizes="144x144" href="{% static 'images/NTS Logo.webp' %}">
+    <link rel="apple-touch-icon" sizes="120x120" href="{% static 'images/NTS Logo.webp' %}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <!-- Status Bar Style (controls how the iOS status bar looks when the app is opened) -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Other options for status bar: "black" or "default" -->
+    <!-- Set the name of the app as it will appear on the home screen -->
+    <meta name="apple-mobile-web-app-title" content="Leaf Analysis">
+    <!-- Optional: Set the background color for the splash screen -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Web App Manifest (optional, for more customization) -->
+    <link rel="manifest" href="{% static 'manifest.json' %}"> 
+    <!-- Optional: Set the theme color for browsers that support it (e.g., Chrome, Opera, Edge) -->
+    <!-- For good practice: Set the viewport for responsive design -->
+    <title>Soil Therapy Report</title>
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" id="bootstapCSS"> -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" id="bootstapCSS" rel="stylesheet">
+    <link href="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.min.css" rel="stylesheet"/>
+
+    <link rel="stylesheet" href="{% static 'css/reporting.css' %}">
+    <link rel="stylesheet" href="{% static 'css/table.css' %}" id="tableCSS">
+</head>
+
+<body>
+    <style>
+        .table-header {
+            background-color: #c0c0c0 !important;
+            background: #c0c0c0 !important;
+            font-weight: bold;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            box-shadow: inset 0 0 0 1000px gray !important;
+
+        }
+
+        .table-header {
+            background-color: #c0c0c0 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        
+        .table-header th {
+            background-color: #c0c0c0 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+    </style>
+    <div class="loader-overlay" id="loader">
+        <div class="loader"></div>
+    </div>
+    <div class="page-padding container-fluid">
+        <div class="row">
+            <div class="col-md-5 col-sm-12">
+                <div class="dashboard-card ">
+                    <h3 class="mb-2 auth-heading"><span>Soil Therapy TEST222™</span></h3>
+                        <p class="auth-text">Streamline the soil analysis process with advanced automation tools that deliver precise data and actionable insights to enhance soil health and productivity.</p>
+                </div>
+
+                {% include '../message-card.html' %}
+
+                <div class="dashboard-card">
+                    <div id="nutritionTabsContent">
+                        <!-- Soil Therapy Tab -->
+                        <div class="tab-pane fade show active" id="soil-content" role="tabpanel">
+                            <div class="container" style="max-width: 800px">
+                                <form id="inputForm" class="needs-validation" action="{% url 'soil_analysis' %}" method="post"
+                                    enctype="multipart/form-data" novalidate>
+                                    {% csrf_token %}
+
+                                    <div class="form-grid">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <div class="form-floating">
+                                                        <select id="soilCrop" name="crop" class="form-select shadow-none" required>
+                                                            <option selected disabled value="">Select a Crop</option>
+                                                            {% for crop in soil_crops %}
+                                                            <option value="{{ crop.id }}">{{ crop.name }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                        <label for="soilCrop" class="form-label">Select Crop:</label>
+                                                        <div class="invalid-feedback">
+                                                            Please select a crop.
+                                                          </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <div class="form-floating">
+                                                        <select id="soilLabType" name="lab_type"
+                                                            class="form-select shadow-none" required>
+                                                            <option selected disabled value="">Select Lab Type</option>
+                                                            {% for lab_type in soil_lab_types %}
+                                                            <option value="{{ lab_type.id }}">{{ lab_type.name }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                        <label for="soilLabType" class="form-label">Lab Type:</label>
+                                                        <div class="invalid-feedback">
+                                                            Please select a lab type.
+                                                          </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <p class="col-12 text-justify">If the laboratory format is not included in the list, please share an email to us with the csv or excel laboratory format so we can integrate it into the model (info@ntsgrow.com).</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="fileInput" class="form-label">File Input: <strong>(Excel
+                                                Files)</strong></label>
+                                        <input type="file" class="form-control" id="fileInput" name="fileInput" multiple
+                                            required />
+                                    </div>
+                                    <div class="text-center">
+                                        <button type="submit" class="btn cancel-btn px-4 me-2">
+                                            Cancel
+                                        </button>
+                                        <!-- onclick="showLoader()" -->
+                                        <button type="submit" class="btn submit-btn px-4" onclick="showLoader()">
+                                            Submit
+                                        </button>
+                                    </div>
+                                    <div style="height: 1.5rem;"></div>
+                                </form>
+                            </div>
+                            <p class="col-12 text-justify">
+
+                                
+                                <strong class="ms-2">Need an example?</strong>
+                                <a href="{% static 'CoA_E25-00-8888_EALP1_1.csv' %}" download class="btn btn-outline-success btn-sm ms-2">
+                                  Download Example CSV
+                                </a>
+                                <span class="text-muted" style="font-size: 0.95em;">
+                                  (Use this EAL template to see the required format and try the chart section)
+                                </span>
+                              </p>
+                        </div>
+                    </div>
+                </div>
+                {% if role == "user"%}
+                    <div class="mb-2" style="display: none;" id="sampleAssignmentContent">
+                        <div class="dashboard-card mb-2">
+                            <p class="mb-2">Matching samples to farms and paddocks</p>
+                            <p>Please select the corresponding farm and paddock for each of the input file sample. Farms with at least a single paddock will be displayed in the dropdowns. Please select a farm first to display the list of available paddocks.</p>
+                            <table class="table table-bordered">
+                                <thead>
+                                <tr>
+                                    <th>Sample</th>
+                                    <th>Farm</th>
+                                    <th>Paddock</th>
+                                </tr>
+                                </thead>
+                                <tbody id="sample-assignment-tbody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="mb-2" id="pdf-decription-dashboard" style="display: none;">
+                    <div class="dashboard-card mb-2">
+                        <div class="form-floating">
+                            <select class="form-select" id="paddockDataSelect" >
+                                <option value="" disabled selected>Please select the table.</option>
+                            </select>
+                            <label for="form-select" class="form-label">Select the paddock to export:</label>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card mb-2">
+                        <p class="m-0">Nutrients Explanation Generation </p>
+                        <form id="recommendationForm" action="" method="post" enctype="multipart/form-data">
+                            <!-- <div class="form-grid">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="form-floating">
+                                                <select class="form-select" id="applicationMethodSelect" name="application_method">
+                                                    <option value="0" selected>Fertigation</option>
+                                                    <option value="1">Foliar Spraying</option>
+                                                </select>
+                                                <label for="applicationMethodSelect" class="form-label">Select the application method:</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="form-floating">
+                                                <select class="form-select" id="recommendationTypeSelect" name="recommendation_type">
+                                                    <option value="0" selected>Conventional</option>
+                                                    <option value="1">Organic</option>
+                                                </select>
+                                                <label for="recommendationTypeSelect" class="form-label">Select the recommendation type:</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> -->
+                            <div style="text-align: right !important;">
+                                <button type="submit" class="btn submit-btn px-4">
+                                    Get Nutrients Explanation
+                                </button>
+                            </div>
+                        </form>
+                        <div id="recommendationFormResponse" class="mt-2">
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        {% if role == "user"%}
+                            <div class="row d-flex align-items-center justify-content-between mb-3">
+                                <span class="col-md-8 col-sm-12">
+                                    <p class="m-0">Save the current analysis report.</p>
+                                </span>
+                                <span class="col-md-4 col-sm-12">
+                                    <button class="btn submit-btn px-4 w-100" onclick="saveAnalysis()">Save Analysis</button>
+                                </span>
+                            </div>
+                        {% endif %}
+
+                        <div class="row d-flex align-items-center justify-content-between mb-3">
+                            <span class="col-md-8 col-sm-12">
+                                <p class="m-0">Download the selected paddock only.</p>
+                            </span>
+                            <span class="col-md-4 col-sm-12">
+                                <button class="btn submit-btn px-4 w-100" onclick="downloadPDF()">Download PDF</button>
+                            </span>
+                        </div>
+
+                        <div class="row d-flex align-items-center justify-content-between mb-3">
+                            <span class="col-md-8 col-sm-12 d-flex align-items-center">
+                                <label for="switch" style="width: 80%;">Include nutrients explanation for all paddocks in the report.</label>
+                                <label class="switch">
+                                    <input type="checkbox">
+                                    <span class="slider round"></span>
+                                </label>
+                            </span>
+                            <span class="col-md-4 col-sm-12">
+                                <button class="btn submit-btn px-4 w-100" onclick="downloadAllPDF()">Export All</button>
+                            </span>                            
+                        </div>
+
+                        <p style="font-weight: 100; font-style: italic; margin: 0;">Note: PDF files can be found directly in the selected downloading folder upon download/printing.</p>    
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7 col-sm-12 pdf-viewer" id="pdf-viewer">
+                <p class="fw-bold">This section will display the tables generated for all of the paddocks of the uploaded files. The tables displayed here will automatically be re-formatted to match the PDF template when exporting.</p>
+                <p class="fw-bold">To start, please upload your files on the left panel, and then select which paddock to export.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.rawgit.com/harvesthq/chosen/gh-pages/chosen.jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
+      integrity="sha384-IQsoLXlHjGpG9iLW+itdG6vVDT3z7MV3pz6SMNfE1+tEZuJr+Po6w5hZ9GFsm+Y7"
+      crossorigin="anonymous"></script>
+
+      
+    <script src="{% static 'js/custom.js' %}" ></script>
+    <!-- Include the tolerance system first -->
+    <script src="{% static 'js/soil-therapy-tolerance-demo.js' %}"></script>
+    
+    <!-- Original soil therapy script -->
+    <script src="{% static 'js/soil-therapy.js' %}"></script>
+    <script>
+        // Tolerance system configuration
+        const nutrientTolerance = new Proxy({}, {
+            get: () => ({ below: 0.5, above: 0.5 })
+        });
+
+        // Set specific tolerances for different nutrients
+        nutrientTolerance['Calcium'] = { below: 0.3, above: 0.4 }; // 30% below, 40% above
+        nutrientTolerance['Magnesium'] = { below: 0.2, above: 0.3 }; // 20% below, 30% above
+        nutrientTolerance['Potassium'] = { below: 0.4, above: 0.5 }; // 40% below, 50% above
+        nutrientTolerance['Phosphorus'] = { below: 0.25, above: 0.35 }; // 25% below, 35% above
+        nutrientTolerance['Sulfur'] = { below: 0.3, above: 0.4 }; // 30% below, 40% above
+        nutrientTolerance['Zinc'] = { below: 0.2, above: 0.3 }; // 20% below, 30% above
+        nutrientTolerance['Copper'] = { below: 0.15, above: 0.25 }; // 15% below, 25% above
+        nutrientTolerance['Manganese'] = { below: 0.25, above: 0.35 }; // 25% below, 35% above
+        nutrientTolerance['Iron'] = { below: 0.2, above: 0.3 }; // 20% below, 30% above
+        nutrientTolerance['Boron'] = { below: 0.3, above: 0.4 }; // 30% below, 40% above
+        nutrientTolerance['Molybdenum'] = { below: 0.4, above: 0.5 }; // 40% below, 50% above
+        nutrientTolerance['Selenium'] = { below: 0.3, above: 0.4 }; // 30% below, 40% above
+        nutrientTolerance['Cobalt'] = { below: 0.25, above: 0.35 }; // 25% below, 35% above
+        nutrientTolerance['Nickel'] = { below: 0.2, above: 0.3 }; // 20% below, 30% above
+        nutrientTolerance['Vanadium'] = { below: 0.3, above: 0.4 }; // 30% below, 40% above
+        nutrientTolerance['Chromium'] = { below: 0.25, above: 0.35 }; // 25% below, 35% above
+        nutrientTolerance['Aluminum'] = { below: 0.2, above: 0.3 }; // 20% below, 30% above
+        nutrientTolerance['Sodium'] = { below: 0.3, above: 0.4 }; // 30% below, 40% above
+        nutrientTolerance['Chloride'] = { below: 0.25, above: 0.35 }; // 25% below, 35% above
+        nutrientTolerance['Silicon'] = { below: 0.2, above: 0.3 }; // 20% below, 30% above
+
+        // Function to apply tolerance to className
+        function applyToleranceToClassName(originalClassName, nutrientName, value, acceptableMin, acceptableMax) {
+            const min = parseFloat(acceptableMin);
+            const max = parseFloat(acceptableMax);
+            const val = parseFloat(value);
+            
+            if (isNaN(min) || isNaN(max) || isNaN(val)) {
+                return originalClassName;
+            }
+            
+            const tol = nutrientTolerance[nutrientName];
+            const greenMin = min * (1 - tol.below);
+            const greenMax = max * (1 + tol.above);
+            
+            // Apply tolerance logic
+            if (val < greenMin) {
+                return "deficient";
+            } else if (val > greenMax) {
+                return "excessive";
+            } else {
+                return "acceptable";
+            }
+        }
+
+        // Override the original calculateProgress function
+        const originalCalculateProgress = calculateProgress;
+        calculateProgress = function(tableCategory, nutrientName, value, acceptableMin, acceptableMax, deficientThreshold, excessiveThreshold, tecValue) {
+            // Get the original result
+            const result = originalCalculateProgress(tableCategory, nutrientName, value, acceptableMin, acceptableMax, deficientThreshold, excessiveThreshold, tecValue);
+            
+            // Apply tolerance to the className
+            result.className = applyToleranceToClassName(result.className, nutrientName, value, acceptableMin, acceptableMax);
+            
+            return result;
+        };
+
+        const urls = {
+            generateTable: "{% url 'generate_soil_table' %}",
+            generateRecommendations: "{% url 'generate_soil_recommendations' %}",
+            listPaddocks: "{% url 'list_paddocks' %}",
+            saveAnalysis: "{% url 'save_soil_analysis' %}",
+        };
+
+        document.title = report['title'];
+
+        /**
+         * Generates the user details display section in the pdf display section based on the extracted data from the CSV files.
+         * @param {dict} data The report object containing the processed user/lab data.
+         * @param {string} paddock The current paddock object name to be included in the returned tag, used when exporting to insert the paddock name for every table.
+         * @return {string} Returns a string containing the HTML tag to be inserted into the DOM.
+         */
+        function generateUserDetails(data, paddock=null, logo=false, disabled = false){
+            let userData = data.user;
+            // <input class="text-align-right user-details-header" type="text" id="userData__address" name="userData__address" value="${userData.address}" onkeyup="updateUserDetailsHeader(this)">
+
+            return `
+            <div class="row">
+                <div class="document-header-details ${logo ? 'col-md-5 col-sm-12' : 'col-md-6 col-sm-12'}">
+                    <div class="field-wrapper">
+                        <label class="field-name" for="userData__date">Date:</label>
+                        <input class="text-align-right user-details-header" type="date" id="userData__date" name="userData__date" value="${userData.date}" oninput="updateUserDetailsHeader(this)" ${disabled ? 'disabled' : ''}>
+                    </div>
+                    <div class="field-wrapper">
+                        <label class="field-name" for="userData__name">Name:</label>
+                        <input class="text-align-right user-details-header" type="text" id="userData__name" name="userData__name" value="${userData.name}" onkeyup="updateUserDetailsHeader(this)" ${disabled ? 'disabled' : ''}>
+                    </div>
+                    <div class="field-wrapper">
+                        <label class="field-name" for="userData_address">Address:</label>
+
+                            <textarea class="text-align-right user-details-header" id="userData__address" type="text" name="userData__address" onkeyup="updateUserDetailsHeader(this)" rows="3" cols="50" maxlength="200" ${disabled ? 'disabled' : ''}>
+                                ${userData.address}
+                            </textarea>
+                            <span class="d-none text-align-right user-details-header" id="userData__address_span">${userData.address}</span>
+                    </div>
+                </div>
+                <div class="document-header-details ${logo ? 'col-md-7 col-sm-12' : 'col-md-6 col-sm-12'} ${logo ? 'd-flex align-items-center justify-content-between':''} ">
+                    <div class="d-flex align-items-start justify-content-between flex-column" style="${logo ? 'width: 80% !important;' : 'width: 100% !important;'}">
+                        <div class="field-wrapper">
+                            <label class="field-name" for="userData__land">Land Use:</label>
+                            <input class="text-align-right user-details-header" type="text" id="userData__land" name="userData__land" value="${userData.land}" onkeyup="updateUserDetailsHeader(this)" ${disabled ? 'disabled' : ''}>
+                        </div>
+                        ${paddock != null ? `
+                            <div class="field-wrapper">
+                                <span class="field-name">PADDOCK:</span>
+                                <input class="text-align-right user-details-header" type="text" value="${paddock}" ${disabled ? 'disabled' : ''}>
+                            </div>
+                            `:``}
+                        <div class="field-wrapper">
+                            <label class="field-name" for="userData__sample_rec">Sample Rec:</label>
+                            <input class="text-align-right user-details-header" type="date" id="userData__sample_rec" name="userData__sample_rec" value="${userData.sample_rec}" oninput="updateUserDetailsHeader(this)" ${disabled ? 'disabled' : ''}>
+                        </div>
+                        <div class="field-wrapper">
+                            <label class="field-name" for="userData__email">Email:</label>
+                            <input class="text-align-right user-details-header" type="text" id="userData__email" name="userData__email" value="${userData.email}" onkeyup="updateUserDetailsHeader(this)" ${disabled ? 'disabled' : ''}>
+                        </div>
+                    </div>
+
+                    ${logo ? `
+                        <div>
+                            <img src="{% static 'images/NTS Logo.webp' %}" alt="" style="width: 100px">
+                        </div>
+                    ` : ``}
+                </div>
+            </div>
+            `
+        }
+
+
+        /**
+         * Downloads all the paddocks in a single PDF file.
+         * @return {null} Returns nothing
+         */
+        async function downloadAllPDF() {
+            let allPDFPages = `<div class="pdf-container">`; // Initialize an empty string to store the HTML for all paddocks
+            let paddocksWithTables = Object.entries(report.paddocks).filter(([key, paddock]) => paddock.hasOwnProperty('table')); // we don't select any specific paddock to export all
+
+            // Iterating through all of the paddocks
+            // dev ~ use .slice(0, 1) for working on only first paddock data
+            // paddocksWithTables.forEach(async ([key, paddock], index) => {
+            for (let index = 0; index < paddocksWithTables.length; index++) {
+                const [key, paddock] = paddocksWithTables[index];
+
+                let parser = new DOMParser();
+                let doc1 = parser.parseFromString(paddock.table, "text/html");
+                let doc2 = parser.parseFromString(paddock.base_saturation_lower_table, "text/html");
+                // Safely parse doc3 only if it's a non-empty string
+                let doc3 = paddock.tae_table && paddock.tae_table.trim()
+                    ? parser.parseFromString(paddock.tae_table, "text/html")
+                    : null;
+
+                let table1 = doc1.querySelector("table") || "<table></table>"; // Get the first table from element1
+                let table3 = doc3 ? doc3.querySelector("table") : document.createElement("table");
+
+                let table1Rows = table1.querySelectorAll("#element-table-body tr"); // Main table rows + base saturation
+                let table1LamotteRows = table1.querySelectorAll("#lamotte-table-body tr"); // Lamotte table rows                
+                let table3TaeRows = doc3 ? table3.querySelectorAll("#element-table-body tr") : []; // Only query table3 rows if doc3 is valid
+
+                let allFormatedExplanation = [];
+
+                // Get the explanation for every paddock if the checkbox is selected to include it
+                if (report['include_nutrients_explanation']){
+                    // event.preventDefault(); // Prevent form submission - function must receive an event
+
+                    let formData = new FormData();
+                    formData.append("crop_group", report['soilCrop']);
+
+                    // Data placeholder
+                    let dataToRecommend = {
+                            "deficient": [],
+                            "optimal": [],
+                            "excess": []
+                        };
+
+                    // Main first table rows + base saturation
+                    table1Rows.forEach(row => {
+                        let bar = row.querySelector('.bar');
+                        if (bar) {
+                            let bgColor = bar.style.background.toLowerCase(); // Normalize case
+                            let firstCell = row.querySelector("td");
+                            let value = firstCell.textContent.trim().split(' (')[0];
+                            let category = row.id.replace('_', ' ');
+
+                            if(value == "Organic Matter"){
+                                category = "Organic Matter";
+                            } else if (value == "pH-level"){
+                                category = "Soil pH";
+                            } 
+                        
+                            // else if ([""].includes(value)){
+                            //     // Note that we need to search in the TAE table not to get the wrong category
+                            //     category = "TAE";
+                            // }
+
+                            // Including the rows where the nutrients are extremely low
+                            if ((bgColor === "red") || (bar.innerHTML == "Extremely Low")){
+                                dataToRecommend.deficient.push({"category": category, "value": value}); 
+                            } 
+
+                            if (bgColor == "rgb(51, 153, 102)") {
+                                dataToRecommend.optimal.push({"category": category, "value": value});
+                            }
+
+                            if (bgColor === "rgb(0, 255, 255)") {
+                                dataToRecommend.excess.push({"category": category, "value": value});
+                            }
+
+                        } else {
+                            let firstCell = row.querySelector("td");
+                            let firstCellValue = firstCell.textContent.trim().split(' (')[0];
+
+                            if(firstCellValue == "CEC"){
+                                category = "CEC";
+
+                                let secondCell = row.querySelectorAll("td")[1];
+                                let secondCellValue = extractAndJoinNumbers(secondCell.textContent.trim());
+                
+                                if (secondCellValue < 20){ // <= 5
+                                    dataToRecommend.deficient.push({"category": category, "value": firstCellValue});
+                                } else if (secondCellValue >= 20 && secondCellValue <= 30){
+                                    dataToRecommend.optimal.push({"category": category, "value": firstCellValue});
+                                }
+                                else if (secondCellValue > 30){
+                                    dataToRecommend.excess.push({"category": category, "value": firstCellValue});
+                                }
+                            }
+                        }
+                    });
+
+                    table1LamotteRows.forEach(row => {
+                        let bar = row.querySelector('.bar');
+                        if (bar) {
+                            let bgColor = bar.style.background.toLowerCase(); // Normalize case
+                            let firstCell = row.querySelector("td");
+                            let value = firstCell.textContent.trim().split(' (')[0];
+                            let category = "Lamotte Reams"; // won't change for Lamotte Reams
+
+                            // Including the rows where the nutrients are extremely low
+                            if ((bgColor === "red") || (bar.innerHTML == "Extremely Low")){
+                                dataToRecommend.deficient.push({"category": category, "value": value}); 
+                            } 
+
+                            if (bgColor == "rgb(51, 153, 102)") {
+                                dataToRecommend.optimal.push({"category": category, "value": value});
+                            }
+
+                            if (bgColor === "rgb(0, 255, 255)") {
+                                dataToRecommend.excess.push({"category": category, "value": value});
+                            }
+                        }
+                    });
+
+                    table3TaeRows.forEach(row => {
+                        let bar = row.querySelector('.bar');
+                        if (bar) {
+                            let bgColor = bar.style.background.toLowerCase(); // Normalize case
+                            let firstCell = row.querySelector("td");
+                            let value = firstCell.textContent.trim().split(' (')[0];
+                            let category = "TAE"; // won't change for TAE
+
+                            // Including the rows where the nutrients are extremely low
+                            if ((bgColor === "red") || (bar.innerHTML == "Extremely Low")){
+                                dataToRecommend.deficient.push({"category": category, "value": value}); 
+                            } 
+
+                            if (bgColor == "rgb(51, 153, 102)") {
+                                dataToRecommend.optimal.push({"category": category, "value": value});
+                            }
+
+                            if (bgColor === "rgb(0, 255, 255)") {
+                                dataToRecommend.excess.push({"category": category, "value": value});
+                            }
+                        }
+                    });
+
+                    formData.append("nutrient_deficient", JSON.stringify(dataToRecommend.deficient));
+                    formData.append("nutrient_excess", JSON.stringify(dataToRecommend.excess));
+                    formData.append("nutrient_optimal", JSON.stringify(dataToRecommend.optimal));
+
+                    // To handle async processing of the promise
+                    const response = await fetch(urls.generateRecommendations, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+
+                    report['paddocks'][key]["recommendations"]["explanation"] = data?.combined_nutrients_explanation || ""
+                    report['paddocks'][key]["recommendations"]["form_data"] = {
+                        "crop_group": report['soilCrop'],
+                        // "application_method": formData.get("application_method"),
+                        // "recommendation_type": formData.get("recommendation_type"),
+                        "nutrient_deficient": dataToRecommend.deficient,
+                        "nutrient_excess": dataToRecommend.excess,
+                        "nutrient_optimal": dataToRecommend.optimal
+                    }
+
+                    // Re-ordering the explanation object here to avoid re-ordering in the paddock change event
+                    const explanationOrder = [
+                        "Organic Matter",
+                        "CEC",
+                        "Soil pH",
+                        "Base Saturation",
+                        "Available Nutrients",
+                        "Lamotte Reams",
+                        "TAE",
+                    ];
+
+                    // Create a new object in the desired order
+                    const reorderedExplanation = {};
+
+                    // First, add keys in explanationOrder if they exist
+                    explanationOrder.forEach((innerkey) => {
+                        if (report['paddocks'][key]["recommendations"]["explanation"].hasOwnProperty(innerkey)) {
+                            reorderedExplanation[innerkey] = report['paddocks'][key]["recommendations"]["explanation"][innerkey];
+                        }
+                    });
+
+                    // Optional: Add any remaining keys that weren't specified in the explanationOrder
+                    Object.keys(report['paddocks'][key]["recommendations"]["explanation"]).forEach((innerkey) => {
+                        if (!reorderedExplanation.hasOwnProperty(innerkey)) {
+                            reorderedExplanation[innerkey] = report['paddocks'][key]["recommendations"]["explanation"][innerkey];
+                        }
+                    });
+
+                    // Update the explanation object in report['paddocks'][selectedPaddock]
+                    report['paddocks'][key]["recommendations"]["explanation"] = reorderedExplanation;
+
+                    // Get the explanation object
+                    let explanationObj = report['paddocks'][key]["recommendations"]["explanation"];
+                    let formattedExplanation = "";
+                    allFormatedExplanation = [];
+                    let count = 1;
+
+                    // Iterate through each key-value pair in the explanation object
+                    for (const [key, value] of Object.entries(explanationObj)) {
+                        formattedExplanation += `<p class="m-0" style="text-align: justify;">${count}. <b>${key}:</b> ${value}<br></p>`;
+                        count++;
+
+                        if (count == 4) {
+                            // push the first three explanations to the array
+                            allFormatedExplanation.push(formattedExplanation);
+                            formattedExplanation = ""; // Reset for the next explanation
+                        }
+                    }
+                    if (count < 4){
+                        // count didn't reach 4, so it wasn't pushed to the array in the previous loop
+                        // we have to push it here
+                        allFormatedExplanation.push(formattedExplanation);
+                        
+                    }else if (formattedExplanation && (count > 4)) {
+                        // push the remaining explanations to the array
+                        // this is to avoid broken paragraphs in the PDF with half-hidden rows (first and last rows of the pages)
+                        allFormatedExplanation.push(formattedExplanation);
+                    }                    
+                }
+
+                let pdfPage = `
+                    <div class="m-5">
+                        <div class="container mt-4">
+                            ${generateUserDetails(report, key, logo=true)}
+                        </div>
+                        <div class="container mt-4" id="soilAnalysisContainer">
+                            <div class="row">
+                                <div class="col-12">
+                                    ${table1.outerHTML}
+                                </div>
+                            </div>
+                        </div>
+                        ${paddock?.tae_table || paddock?.nutrient_ratios_table || (paddock?.recommendations?.explanation && report['include_nutrients_explanation']) ? `
+                            <div class="page-break"></div>
+                            <div class="container mt-4">
+                                ${generateUserDetails(report, key, logo=true)}
+                            </div> 
+                        `: ""}
+                        ${paddock?.tae_table ? `
+                            <div class="container mt-4" id="soilAnalysisContainer">
+                                <div class="row">
+                                    <div class="col-12">
+                                        ${paddock.tae_table}
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ""}
+                        ${paddock?.nutrient_ratios_table ? `
+                            <div class="container mt-4" id="soilAnalysisContainer">
+                                <div class="row">
+                                    <div class="col-12">
+                                        ${paddock.nutrient_ratios_table}
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ""}
+                        ${paddock?.recommendations?.explanation && report['include_nutrients_explanation']? `
+                            <div class="container mt-4">
+                                <div class="row">
+                                    <div class="col-12 text-justify">
+                                        <h4 class="fw-b"><b>Nutrient Explanation:</b></h4>
+                                        ${allFormatedExplanation[0] || ""}
+                                    </div>
+                                </div>
+                            </div>
+                            ${allFormatedExplanation.length > 1 ? `
+                                <div class="page-break"></div>
+                                <div class="container mt-4">
+                                    ${generateUserDetails(report, key, logo=true)}
+                                </div>
+                                <div class="container mt-4">
+                                    <div class="row">
+                                        <div class="col-12 text-justify">
+                                            ${allFormatedExplanation[1] || ""}
+                                        </div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        ` : ''}
+                    </div>
+                    <!-- <div class="page-break m-0 p-0"></div> -->
+                    `;
+                    // ${report?.description ? `
+                    //     <div class="container table-notes mt-4">
+                    //         <div class="row">
+                    //             <div class="col-12">
+                    //                 <h4 class="fw-b">Notes:</h4>
+                    //                 <p class="text-justify">${report?.description}</p>
+                    //             </div>
+                    //         </div>
+                    //     </div>
+                    // ` : ""}
+
+                    if (index !== paddocksWithTables.length - 1) {
+                        pdfPage += `
+                        <div class="page-break m-0 p-0"></div>
+                        `
+                    }
+
+                allPDFPages += pdfPage;
+
+            };
+
+            allPDFPages += `</div>`;
+
+            // Create the main window
+            const html_template = `
+            <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>${report['title']}</title>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" id="bootstapCSS">
+                    <link rel="stylesheet" href="{% static 'css/table.css' %}" id="tableCSS">
+                </head>
+                <body class="pdf-container">
+                    <style>
+                        .table-header {
+                            background-color: #c0c0c0 !important;
+                            background: #c0c0c0 !important;
+                            font-weight: bold;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                            box-shadow: inset 0 0 0 1000px gray !important;
+
+                        }
+
+                        .table-header {
+                            background-color: #c0c0c0 !important;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                        
+                        .table-header th {
+                            background-color: #c0c0c0 !important;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                        
+                        .page-break{
+                            height: 0;
+                            page-break-before: always;
+                        }
+
+                        table {
+                            width: 100% !important;
+                            /* border-collapse: collapse !important; */
+                            border-collapse: separate !important;
+                            border-spacing: 0;
+
+                        }
+                        
+                        table tbody {
+                            border: 1px solid #1b1c1d !important;
+                        }
+
+                        table tr, table td, table th, table tbody {
+                            border: none !important;
+                            background: transparent !important;
+                            box-shadow: none !important;
+                            outline: none !important;
+
+                            padding: 1px 2px !important;
+                            font-size: 10px !important;
+                        }
+
+                        .table-header th:first-child,
+                        .table-header th:nth-child(2),
+                        .table-header th:nth-child(3),
+                        .table-header th:nth-child(4),
+                        .table-header th:nth-child(5),
+                        .table-header th:nth-child(6) {
+                            border-bottom: 2px solid #1b1c1d !important;
+                            border-right: 2px solid #1b1c1d !important;
+                            border-top: 2px solid #1b1c1d !important;
+                            boder-left: none !important;
+                        }
+
+                        .table-header th:nth-child(6) {
+                            border-left: 2px solid #1b1c1d !important;
+                        }
+
+                        tbody td:nth-child(1), tbody td:nth-child(2), tbody td:nth-child(3) {
+                            border: 1px solid #1b1c1d !important;
+                        }
+
+
+                        tbody td:nth-child(4), tbody td:nth-child(5), tbody td:nth-child(6) {
+                            border-top: none !important;
+                            border-bottom: none !important;
+                            border-left: 1px solid #1b1c1d !important;
+                            border-right: 1px solid #1b1c1d !important;
+                        }
+
+                        table tr:first-child td:nth-child(4),
+                        table tr:first-child td:nth-child(5),
+                        table tr:first-child td:nth-child(6) {
+                            border-top: 1px solid #1b1c1d !important;
+                        }
+
+                        table {
+                            border: 2px solid #1b1c1d !important;
+                        }
+
+                        table tr:last-child td:nth-child(4),
+                        table tr:last-child td:nth-child(5),
+                        table tr:last-child td:nth-child(6) {
+                            border-bottom: 1px solid #1b1c1d !important;
+                        }
+
+                        tr.base-saturations-header td:nth-child(1){
+                            border-bottom: none !important;
+                            border-top: none !important;
+                        }
+
+                        tr.base-saturations-header td:nth-child(2),
+                        tr.base-saturations-header td:nth-child(3),
+                        tr.base-saturations-header td:nth-child(4){
+                            border-top: none !important;
+                            border-bottom: none !important;
+                            border-left: 1px solid #1b1c1d !important;
+                            border-right: 1px solid #1b1c1d !important;
+                        }
+                        
+                        #userData__address_span{
+                            display: block !important;
+                            white-space: pre-wrap;
+                            height: max-content !important;
+                            font-size: 10px !important;
+                            font-family: 'Arial', sans-serif;
+                            font-weight: normal !important;
+                            color: #000 !important;
+                        }
+
+                        input, textarea, #userData__address_span {
+                            border: none !important;
+                            padding: 0 !important;
+                            font-size: 10px !important;
+                        }
+
+                        label {
+                            width: 90px !important;
+                        }
+                        
+                        textarea#userData__address {
+                            display: none !important;
+                        }
+
+                        .document-header-details .field-wrapper .field-name{
+                            width: 100px;
+                        }
+
+                        .document-header-details .field-wrapper{
+                            justify-content: space-between;
+                        }
+
+                        .user-details-header{
+                            width: 60%;
+                        }
+
+                        .document-header-details .field-wrapper{
+                            width: 90%;
+                        }
+
+                        .table-bordered > tbody > tr > td, .table-bordered > thead > tr > th {
+                            padding: 0px 2px !important;
+                        }
+
+                        .table-bordered > thead > tr > th, .table-bordered > tbody, .table-bordered > tfoot {
+                            border: 2px solid #000 !important;
+                        }
+                        
+                        .bar {
+                            left: 104% !important;
+                        }
+
+                    </style>
+                    ${allPDFPages}
+                </body>
+                </html>
+            `;
+
+            // Create a new div to hold the HTML content that will be converted to PDF
+            // const pdfContent = document.createElement('div');
+            // pdfContent.innerHTML = html_template;
+
+            // // Convert HTML to PDF using html2pdf.js
+            // html2pdf()
+            //     .from(pdfContent)
+            //     .set({
+            //         margin:       10,
+            //         filename:     'Soil_Analysis_Report.pdf',
+            //         html2canvas:  { scale: 2 },
+            //         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            //         pagebreak: { mode: ['css', 'legacy'] }
+            //     })
+            //     .toPdf()
+            //     .get('pdf')
+            //     .then(function(pdf) {
+            //         // Open the PDF in a new tab
+            //         const pdfUrl = pdf.output('bloburl');
+            //         const newTab = window.open(pdfUrl, '_blank');
+            //         if (newTab) {
+            //             newTab.focus();
+            //         } else {
+            //             alert("Please allow popups for this site.");
+            //         }
+            //     })
+            //     .save();
+
+            // Wokring --
+            // Create an iframe for printing
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write(html_template);
+            // iframeDoc.title = report['title'];  // Set the title for the PDF filename
+            iframeDoc.close();
+
+            iframe.onload = () => {
+                iframe.contentWindow.focus(); // Make sure the iframe is focused for printing
+                iframe.contentWindow.print();
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                }, 300);
+            };
+            // ---
+
+            console.log(report)
+        }
+
+        /**
+            * Downloads the PDF file with the generated HTML.
+            * @return {null} Returns nothing
+            */
+        function downloadPDF() {
+            let allPDFPages = `
+            <div class="pdf-container">
+                `; // Initialize an empty string to store the HTML for all paddocks
+            const selectedPaddock = getSelectedPaddock();
+            const paddocksWithTables = Object.entries(report.paddocks).filter(([key, paddock]) => paddock.hasOwnProperty('table') && key == selectedPaddock);
+            
+            // add the previously obtained recommendation to to the HTML
+            // let recommendedProductsDeficientTag = '';
+            
+            // if (report['paddocks'][selectedPaddock]?.recommendations?.form_data?.nutrient_deficient?.length > 0) {
+            //     Object.keys(report['paddocks'][selectedPaddock]?.recommendations?.recommended_products?.deficient || {}).forEach(key => {
+            //         let product = report['paddocks'][selectedPaddock]["recommendations"]["recommended_products"]['deficient'][key];                        
+            //         recommendedProductsDeficientTag += `<li><b>${product.nutrient}</b>: ${product.recommended_products.join(', ')}</li>`;
+            //     });
+            // }
+
+            // Get the explanation object
+            let explanationObj = report['paddocks'][selectedPaddock]["recommendations"]["explanation"];
+            let formattedExplanation = "";
+            let allFormatedExplanation = [];
+            let count = 1;
+
+            // Iterate through each key-value pair in the explanation object
+            for (const [key, value] of Object.entries(explanationObj)) {
+                formattedExplanation += `<p class="m-0" style="text-align: justify;">${count}. <b>${key}:</b> ${value}<br></p>`;
+                count++;
+
+                if (count == 4) {
+                    // push the first three explanations to the array
+                    allFormatedExplanation.push(formattedExplanation);
+                    formattedExplanation = ""; // Reset for the next explanation
+                }
+            }
+            if (count < 4){
+                // count didn't reach 4, so it wasn't pushed to the array in the previous loop
+                // we have to push it here
+                allFormatedExplanation.push(formattedExplanation);
+                
+            }else if (formattedExplanation && (count > 4)) {
+                // push the remaining explanations to the array
+                // this is to avoid broken paragraphs in the PDF with half-hidden rows (first and last rows of the pages)
+                allFormatedExplanation.push(formattedExplanation);
+            }
+
+            paddocksWithTables.forEach(([key, paddock], index) => {
+                // Process the tables since we will need to split them
+                let parser = new DOMParser();
+                let doc1 = parser.parseFromString(paddock.table, "text/html");
+                let doc2 = parser.parseFromString(paddock.base_saturation_lower_table, "text/html");
+
+                let table1 = doc1.querySelector("table"); // Get the first table from element1
+                // let table2 = doc2.querySelector("table"); // Get the first table from element2
+                
+                // let tbody1 = table1.querySelector("tbody"); // Extract the <tbody> from element1
+                // let tbody2s = table2.querySelectorAll("tbody"); // Extract all <tbody> from element2
+                
+                // tbody2s.forEach(tbody2 => {
+                //     tbody2.querySelectorAll("tr").forEach(row2 => {
+                //         table1.querySelectorAll("tr").forEach(row1 => {
+                //             if (row1.isEqualNode(row2)) {
+                //                 row1.remove(); // Remove the row from tbody1
+                //             }
+                //         });
+                //     });
+                // });
+
+                // Remove the llamotte section header from the first table
+                // table1.querySelector('#lamotte-table-header').remove();
+
+                // Replace the initial table body with the processed one
+                // let initialTbody = table1.querySelector("tbody"); // Find the existing tbody in table1
+                // initialTbody.replaceWith(tbody1); // Replace the old tbody with the updated tbody1
+                
+                let pdfPage = `
+                    <div class="m-3">
+                        <div class="container mt-4">
+                            ${generateUserDetails(report, key, logo=true)}
+                        </div>
+                        <div class="container mt-4" id="soilAnalysisContainer">
+                            <div class="row">
+                                <div class="col-12">
+                                    ${table1.outerHTML}
+                                </div>
+                            </div>
+                        </div>
+                        ${paddock?.tae_table || paddock?.nutrient_ratios_table || (paddock?.recommendations?.explanation && report['include_nutrients_explanation']) ? `
+                            <div class="page-break"></div>
+                            <div class="container mt-4">
+                                ${generateUserDetails(report, key, logo=true)}
+                            </div> 
+                        `: ""}
+                        ${paddock?.tae_table ? `
+                            <div class="container mt-4" id="soilAnalysisContainer">
+                                <div class="row">
+                                    <div class="col-12">
+                                        ${paddock.tae_table}
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ""}
+                        ${paddock?.nutrient_ratios_table ? `
+                            <div class="container mt-4" id="soilAnalysisContainer">
+                                <div class="row">
+                                    <div class="col-12">
+                                        ${paddock.nutrient_ratios_table}
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ""}
+                        ${paddock?.recommendations?.explanation? `
+                            ${!(paddock?.tae_table || paddock?.nutrient_ratios_table || (paddock?.recommendations?.explanation && report['include_nutrients_explanation']))? 
+                                `
+                                <div class="page-break"></div>
+                                <div class="container mt-4">
+                                    ${generateUserDetails(report, key, logo=true)}
+                                </div> 
+                            ` : ""} 
+                            <div class="container mt-4">
+                                <div class="row">
+                                    <div class="col-12 text-justify">
+                                        <h4 class="fw-b"><b>Nutrient Explanation:</b></h4>
+                                        ${allFormatedExplanation[0]}
+                                    </div>
+                                </div>
+                            </div>
+                            ${allFormatedExplanation.length > 1 ? `
+                                <div class="page-break"></div>
+                                <div class="container mt-4">
+                                    ${generateUserDetails(report, key, logo=true)}
+                                </div>
+                                <div class="container mt-4">
+                                    <div class="row">
+                                        <div class="col-12 text-justify">
+                                            ${allFormatedExplanation[1]}
+                                        </div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        ` : ''}
+                    </div>
+                    `;
+
+                    // Removed the following code from the pdfPage, it was before the recommendation explanation section
+                    /*
+                    <div class="page-break"></div>
+                    <div class="container mt-4">
+                        ${generateUserDetails(report, key, logo=true)}
+                    </div>
+
+                    ${report?.description ? `
+                        <div class="container table-notes mt-4">
+                            <div class="row">
+                                <div class="col-12">
+                                    <h4 class="fw-b">Notes:</h4>
+                                    <p class="text-justify">${report?.description}</p>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ""}
+
+                    */
+
+                    /*
+                    
+                    ${paddock?.recommendations?.explanation && report?.description ? `
+                        <div class="page-break"></div>
+                        <div class="container table-notes mt-4">
+                            <div class="row">
+                                <div class="col-12">
+                                    ${report['paddocks'][selectedPaddock]?.recommendations?.form_data?.nutrient_deficient?.length > 0 ? `
+                                        <p class="m-0 mt-3"><b>Recommended products for deficient nutrients:</b></p>
+                                        <ul class="m-0">${recommendedProductsDeficientTag}</ul>
+
+                                    ` : ''}
+                                </div>
+                                <div class="col-12">
+                                    <h4 class="fw-b">Notes:</h4>
+                                    <p class="text-justify">${report.description}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        `: ''}
+                    
+                    */
+
+                    // if (index !== paddocksWithTables.length - 1) {
+                    //     pdfPage += `
+                    //     <div class="page-break"></div>
+                    //     `
+                    // }
+
+                allPDFPages += pdfPage;
+            });
+
+            allPDFPages += `
+            </div>`;
+
+            // Create the main window
+            const html_template = `
+            <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>${report['title']}</title>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" id="bootstapCSS">
+                    <link rel="stylesheet" href="{% static 'css/table.css' %}" id="tableCSS">
+                </head>
+                <body class="pdf-container">
+                    <style>
+                        .table-header {
+                            background-color: #c0c0c0 !important;
+                            background: #c0c0c0 !important;
+                            font-weight: bold;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                            box-shadow: inset 0 0 0 1000px gray !important;
+
+                        }
+
+                        .table-header {
+                            background-color: #c0c0c0 !important;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                        
+                        .table-header th {
+                            background-color: #c0c0c0 !important;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                        
+                        .page-break{
+                            height: 0;
+                            page-break-before: always;
+                        }
+
+                        table {
+                            width: 100% !important;
+                            /* border-collapse: collapse !important; */
+                            border-collapse: separate !important;
+                            border-spacing: 0;
+
+                        }
+                        
+                        table tbody {
+                            border: 1px solid #1b1c1d !important;
+                        }
+
+                        table tr, table td, table th, table tbody {
+                            border: none !important;
+                            background: transparent !important;
+                            box-shadow: none !important;
+                            outline: none !important;
+
+                            padding: 1px 2px !important;
+                            font-size: 10px !important;
+                        }
+
+                        .table-header th:first-child,
+                        .table-header th:nth-child(2),
+                        .table-header th:nth-child(3),
+                        .table-header th:nth-child(4),
+                        .table-header th:nth-child(5),
+                        .table-header th:nth-child(6) {
+                            border-bottom: 2px solid #1b1c1d !important;
+                            border-right: 2px solid #1b1c1d !important;
+                            border-top: 2px solid #1b1c1d !important;
+                            boder-left: none !important;
+                        }
+
+                        .table-header th:nth-child(6) {
+                            border-left: 2px solid #1b1c1d !important;
+                        }
+
+                        tbody td:nth-child(1), tbody td:nth-child(2), tbody td:nth-child(3) {
+                            border: 1px solid #1b1c1d !important;
+                        }
+
+
+                        tbody td:nth-child(4), tbody td:nth-child(5), tbody td:nth-child(6) {
+                            border-top: none !important;
+                            border-bottom: none !important;
+                            border-left: 1px solid #1b1c1d !important;
+                            border-right: 1px solid #1b1c1d !important;
+                        }
+
+                        table tr:first-child td:nth-child(4),
+                        table tr:first-child td:nth-child(5),
+                        table tr:first-child td:nth-child(6) {
+                            border-top: 1px solid #1b1c1d !important;
+                        }
+
+                        table {
+                            border: 2px solid #1b1c1d !important;
+                        }
+
+                        table tr:last-child td:nth-child(4),
+                        table tr:last-child td:nth-child(5),
+                        table tr:last-child td:nth-child(6) {
+                            border-bottom: 1px solid #1b1c1d !important;
+                        }
+
+                        tr.base-saturations-header td:nth-child(1){
+                            border-bottom: none !important;
+                            border-top: none !important;
+                        }
+
+                        tr.base-saturations-header td:nth-child(2),
+                        tr.base-saturations-header td:nth-child(3),
+                        tr.base-saturations-header td:nth-child(4){
+                            border-top: none !important;
+                            border-bottom: none !important;
+                            border-left: 1px solid #1b1c1d !important;
+                            border-right: 1px solid #1b1c1d !important;
+                        }
+                        
+                        #userData__address_span{
+                            display: block !important;
+                            white-space: pre-wrap;
+                            height: max-content !important;
+                            font-size: 10px !important;
+                            font-family: 'Arial', sans-serif;
+                            font-weight: normal !important;
+                            color: #000 !important;
+                        }
+
+                        input, textarea, #userData__address_span {
+                            border: none !important;
+                            padding: 0 !important;
+                            font-size: 10px !important;
+                        }
+
+                        label {
+                            width: 90px !important;
+                        }
+                        
+                        textarea#userData__address {
+                            display: none !important;
+                        }
+
+                        .document-header-details .field-wrapper .field-name{
+                            width: 100px;
+                        }
+
+                        .document-header-details .field-wrapper{
+                            justify-content: space-between;
+                        }
+
+                        .user-details-header{
+                            width: 60%;
+                        }
+
+                        .document-header-details .field-wrapper{
+                            width: 90%;
+                        }
+
+                        .table-bordered > tbody > tr > td, .table-bordered > thead > tr > th {
+                            padding: 0px 2px !important;
+                        }
+
+                        .table-bordered > thead > tr > th, .table-bordered > tbody, .table-bordered > tfoot {
+                            border: 2px solid #000 !important;
+                        }
+
+                        .bar {
+                            left: 104% !important;
+                        }
+
+                    </style>
+                    ${allPDFPages}
+                </body>
+                </html>
+            `;
+            
+            // // Create a print window
+            // const pdfwindow = window.open('', '', 'width=800,height=600');
+            // pdfwindow.document.write(html_template);
+            // pdfwindow.document.close();
+                        
+
+            // pdfwindow.onload = () => {
+            //     pdfwindow.print();
+            //     setTimeout(() => {
+            //         pdfwindow.close();
+            //     }, 300);
+            // };
+
+            // Wokring --
+            // Create an iframe for printing
+            // const iframe = document.createElement('iframe');
+            // iframe.style.display = 'none';
+            // document.body.appendChild(iframe);
+
+            // const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            // iframeDoc.open();
+            // iframeDoc.write(html_template);
+            // // iframeDoc.title = report['title'];  // Set the title for the PDF filename
+            // iframeDoc.close();
+
+            // iframe.onload = () => {
+            //     iframe.contentWindow.focus(); // Make sure the iframe is focused for printing
+            //     iframe.contentWindow.print();
+            //     setTimeout(() => {
+            //         document.body.removeChild(iframe);
+            //     }, 300);
+            // };
+            // ---
+
+            // // Create a new div to hold the HTML content that will be converted to PDF
+            const pdfContent = document.createElement('div');
+            pdfContent.innerHTML = html_template;
+
+            // Convert HTML to PDF using html2pdf.js
+            html2pdf()
+                .from(pdfContent)
+                .set({
+                    margin:       10,
+                    filename:     'Soil_Analysis_Report.pdf',
+                    html2canvas:  { scale: 2 },
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: ['css', 'legacy'] }
+                })
+                .toPdf()
+                .get('pdf')
+                .then(function(pdf) {
+                    // Open the PDF in a new tab
+                    const pdfUrl = pdf.output('bloburl');
+                    const newTab = window.open(pdfUrl, '_blank');
+                    if (newTab) {
+                        newTab.focus();
+                    } else {
+                        alert("Please allow popups for this site.");
+                    }
+                })
+                .save();
+
+
+
+            // const container = document.createElement('div');
+            // container.innerHTML = html_template;
+                    
+            // const opt = {
+            //     margin: 10,
+            //     filename: 'Soil_Analysis_Report.pdf',
+            //     image: { type: 'jpeg', quality: 0.98 },
+            //     html2canvas: { 
+            //         scale: 2,
+            //         useCORS: true,
+            //         letterRendering: true
+            //     },
+            //     jsPDF: { 
+            //         unit: 'mm', 
+            //         format: 'a4', 
+            //         orientation: 'portrait'
+            //     }
+            // };
+
+            // // Use html2pdf to convert the element to PDF and trigger download
+            // html2pdf()
+            //     .from(container)
+            //     .set(opt)
+            //     // .toPdf()
+            //     // .get('pdf')
+            //     // .then((pdf) => {
+            //     //     // Add page numbers
+            //     //     // const totalPages = pdf.internal.getNumberOfPages();
+            //     //     // for (let i = 1; i <= totalPages; i++) {
+            //     //     //     pdf.setPage(i);
+            //     //     //     pdf.setFontSize(10);
+            //     //     //     pdf.text(`Page ${i} of ${totalPages}`, 
+            //     //     //         pdf.internal.pageSize.getWidth() - 1, 
+            //     //     //         pdf.internal.pageSize.getHeight() - 0.5);
+            //     //     // }
+            //     // })
+            //     .save();
+        }
+
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function(){
+            // Check if the user is logged in using the token passed from the URL
+            const token = getQueryParam('token');
+            if (token) {setCookie('api_bearer', token, 365)}
+
+            // Attach event listner to listen for the toggle element for including the nutrients explanation when exporting the whole paddocks
+            document.querySelector('.switch input[type="checkbox"]').addEventListener('change', (event) => {
+                report['include_nutrients_explanation'] = event.target.checked;
+            });
+
+            // Attach event listener to multiple elements
+            ["soilCrop", "soilLabType", "fileInput"].forEach(id => {
+                document.getElementById(id).addEventListener("change", handleChangeEvent);
+            });
+
+            // Listens for change in the paddock dropdown
+            // It also updates the input field with the description of the selected paddock from the report object.
+            document.getElementById("paddockDataSelect").addEventListener("change", function() {
+                if (
+                    report['paddocks'][this.value]["recommendations"]["explanation"] != ""
+                ){
+                    // Case when there is a previous reccomendation obtained for the paddock
+                    // add the previously obtained recommendation to the HTML
+                    // let recommendedProductsDeficientTag = '';
+                    // let recommendedProductsExcessTag = '';
+
+                    // if (report['paddocks'][this.value]["recommendations"]["form_data"]["nutrient_deficient"].length > 0){
+                    //     Object.keys(report['paddocks'][this.value]["recommendations"]["recommended_products"]['deficient']).forEach(key => {
+                    //         let product = report['paddocks'][this.value]["recommendations"]["recommended_products"]['deficient'][key];                        
+                    //         recommendedProductsDeficientTag += `<li><b>${product.nutrient}</b>: ${product.recommended_products.join(', ')}</li>`
+                    //     });
+                    // }
+
+                    // if (report['paddocks'][this.value]["recommendations"]["form_data"]["nutrient_excess"].length > 0){
+                    //     Object.keys(report['paddocks'][this.value]["recommendations"]["recommended_products"]['excess']).forEach(key => {
+                    //         let product = report['paddocks'][this.value]["recommendations"]["recommended_products"]['excess'][key];                        
+                    //         recommendedProductsExcessTag += `<li><b>${product.nutrient}</b>: ${product.recommended_products.join(', ')}</li>`
+                    //     });
+                    // }
+
+                    // Get the explanation object
+                    const explanationObj = report['paddocks'][this.value]["recommendations"]["explanation"];
+
+                    // Initialize an empty string to store the formatted explanation
+                    let formattedExplanation = "";
+
+                    // Counter for numbering
+                    let count = 1;
+
+                    // Iterate through each key-value pair in the explanation object
+                    for (const [key, value] of Object.entries(explanationObj)) {
+                        formattedExplanation += `<p class="m-0" style="text-align: justify;">${count}. <b>${key}:</b> ${value}<br></p>`;
+                        count++;
+                    }
+
+                    document.getElementById('recommendationFormResponse').innerHTML = `
+                        <p class="m-0"><b>Nutrient explanation:</b></p>
+                        ${formattedExplanation}
+                    `;
+
+                    // Hidden from above
+                    /*
+                    ${report['paddocks'][this.value]["recommendations"]["form_data"]["nutrient_deficient"].length > 0 ? `
+                        <p class="m-0 mt-3"><b>Recommended products for deficient nutrients:</b></p>
+                        <ul class="m-0">${recommendedProductsDeficientTag}</ul>
+                        ` : ''}
+
+                    ${report['paddocks'][this.value]["recommendations"]["form_data"]["nutrient_excess"].length ? `
+                        <p class="m-0 mt-3"><b>Recommended products for excess nutrients:</b></p>
+                        <ul class="m-0">${recommendedProductsExcessTag}</ul>
+                        ` : ""}
+                    */
+
+                    // change the selected elements to match what was selected previously by the form data
+                    // document.getElementById('applicationMethodSelect').value = report['paddocks'][this.value]["recommendations"]['form_data']['application_method']
+                    // document.getElementById('recommendationTypeSelect').value = report['paddocks'][this.value]["recommendations"]['form_data']['recommendation_type']
+
+                }else{
+                    // Case when there is no previous recommendation obtained for the paddock
+                    document.getElementById('recommendationFormResponse').innerHTML = "";
+
+                    // change the selected elements to the first option
+                    // document.getElementById('applicationMethodSelect').value = 0
+                    // document.getElementById('recommendationTypeSelect').value = 0
+                }
+            });
+
+            // Listen for form submission
+            document.getElementById("inputForm").addEventListener("submit", function(event) {
+                event.preventDefault(); // Prevent form submission
+
+                let form = this;
+                
+                // Check form validity
+                if (!form.checkValidity()) {
+                    form.classList.add('was-validated'); // Bootstrap validation styling
+
+                    handleMessageCard({
+                        "error": "Please fill out all required fields correctly."
+                    });
+
+                    hideLoader();
+                    return;
+                }
+
+                // Disable submit button to prevent multiple submissions
+                // let submitButton = form.querySelector('button[type="submit"]');
+                // submitButton.disabled = true;
+
+                let formData = new FormData(this); // Collect form data
+                
+                // Send form data to the server
+                fetch(urls.generateTable, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(async data => {
+                    // Handle this in all cases 
+                    handleMessageCard(data);
+
+                    // Reset the form
+                    reset();
+
+                    if (data.error){
+                        hideLoader();
+                        return;
+                    }
+
+                    const userRole = "{{ role|escapejs }}";
+                    if (userRole === "user") {
+                        // Populate the sample pairing table
+                        await populateSamplePairingFarmsPaddocksTable(Object.keys(data.calculated_results));
+                    }
+                    
+                    // Populate the dropdown with the paddock names
+                    populateTableSelectionDropdown(data.calculated_results)
+
+                    // Clear the PDF Viewer
+                    // document.getElementById('pdf-viewer').innerHTML = `<p id="report-title">Filename: ${report['title']}.pdf</p>`;
+                    document.getElementById('pdf-viewer').innerHTML = "";
+
+                    // Format the date
+                    let dateString = new Date();
+                    dateString = dateString.toISOString().split('T')[0];
+
+                    const sampleRecString = data?.lab_data?.date_reported || "";
+                    let formattedSampleRecDate = "";
+
+                    // Only format the date if it is not empty
+                    if (sampleRecString) {
+                        const date = new Date(sampleRecString);
+                        // Check if the date is valid
+                        if (!isNaN(date.getTime())) {
+                            formattedSampleRecDate = date.toISOString().split('T')[0];
+                        }
+                    }
+
+                    // Update the user data
+                    // Get the user.paddock value from the paddock object key during export and display, for each paddock
+                    report['user']['date'] = dateString;
+                    report['user']['name'] = data?.lab_data?.name || "";
+                    report['user']['address'] = String(data?.lab_data?.address || "").trim(); // doesn't exist in the data
+                    report['user']['land'] = data?.lab_data?.land_use || "";
+                    report['user']['sample_red'] = formattedSampleRecDate;
+                    report['user']['email'] = ""; // doesn't exist in the data
+
+                    const soilCropSelect = document.getElementById('soilCrop');
+                    const soilLabTypeSelect = document.getElementById('soilLabType');
+
+                    report['soilCrop'] = soilCropSelect.options[soilCropSelect.selectedIndex].text;
+                    report['soilLabType'] = soilLabTypeSelect.options[soilLabTypeSelect.selectedIndex].text;
+
+                    let userDataTag = generateUserDetails(report, paddock=null, logo=false);
+                    document.getElementById('pdf-viewer').innerHTML += `<div class="pdf-viewer-table-wrapper">${userDataTag}</div>`;
+                    
+                    // Generate the table data keys (paddocks)
+                    // Generate tables for all data keys (paddocks)
+                    for([key, val] of Object.entries(data.calculated_results)) {
+                        // Create a new dict for the key
+                        report['paddocks'][key] = {}            
+                        
+                        // Update table data
+                        // Note that here we use different approach, we need to pass the whole data to the generateTable function
+                        // with the paddock name as the key since we need to access different keys from the API
+                        // response data to generate the table.
+                        let {table, tae_table, base_saturation_lower_table, nutrient_ratios_table, dataset} = await generateTable(data, key);
+                        report['paddocks'][key]['table'] = table;
+                        report['paddocks'][key]['tae_table'] = tae_table;
+                        report['paddocks'][key]['base_saturation_lower_table'] = base_saturation_lower_table;
+                        report['paddocks'][key]['nutrient_ratios_table'] = nutrient_ratios_table;
+                        report['paddocks'][key]['dataset_processed'] = dataset;
+                        // report['paddocks'][key]['fertigation_products'] = [];
+                        // report['paddocks'][key]['foliar_products'] = []
+                        report['paddocks'][key]['recommendations'] = {
+                            "explanation": "",
+                            // "recommended_products": [],
+                            "form_data": {}
+                        }
+
+                        // Append Tables to PDF Viewer
+                        // Note that the tables in this view are not A4, which needs to be when printing
+                        // We also replace the keys spaces values with '___' to avoid any issues with the HTML ID
+                        document.getElementById('pdf-viewer').innerHTML += `<div class="pdf-viewer-table-wrapper" id="pdf-viewer-${key.replace(/ /g,"___")}">
+                            <p>PADDOCK: ${key}</p>    
+                            ${table ? table + "<br>" : ""}
+                            ${tae_table ? tae_table + "<br>" : ""}
+                            ${nutrient_ratios_table ? nutrient_ratios_table : ""}
+                        </div>`; // no need to add "<br>" after the last table
+                        
+                        // no longer using the following code section
+                        // document.getElementById(`pdf-viewer-${key.replace(/ /g,"___")}`).innerHTML += `
+                        // <p class="multi-line-text" id="description-${key.replace(/ /g,"___")}"></p>
+                        // <ul class="multi-line-text" id="products-${key.replace(/ /g,"___")}"></ul>
+                        // `;
+
+                    }
+                    
+                    // Display the pdf dashboard
+                    document.getElementById('pdf-decription-dashboard').style.display = 'block';
+
+                    // hide loader
+                    hideLoader()
+                }).catch((error) => {
+                    let data = {
+                        "error": "Error generating table. Please make sure to select the correct fields.",
+                    }
+                    handleMessageCard(data)
+                    // alert("Error generating table. Please make sure to select the correct fields.");
+                    console.log("Error generating table. Err: ", error)
+                    // hide loader
+                    hideLoader()
+                });
+            });
+
+            // Recommendation Form Listner
+            document.getElementById('recommendationForm').addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent form submission
+
+                let formData = new FormData(this); // Collect form data
+                formData.append("crop_group", report['soilCrop']);
+
+                // Data placeholder
+                let dataToRecommend = {
+                        "deficient": [],
+                        "optimal": [],
+                        "excess": []
+                    };
+
+                // Get the nutrients that are deficient or excesses
+                // to be efficient when dealing with the AI model call, we generate recommendations for each paddock when it is opened
+                const selectedPaddock = getSelectedPaddock();
+                
+                // Parse the html tags from the table string to get the nutrients
+                let parser = new DOMParser();
+
+                // Working on the main table + base saturation
+                let doc = parser.parseFromString(report['paddocks'][selectedPaddock]['table'], 'text/html');
+                let rows = doc.querySelectorAll("#element-table-body tr");
+                rows.forEach(row => {
+                    let bar = row.querySelector('.bar');
+                    if (bar) {
+                        let bgColor = bar.style.background.toLowerCase(); // Normalize case
+                        let firstCell = row.querySelector("td");
+                        let value = firstCell.textContent.trim().split(' (')[0];
+                        let category = row.id.replace('_', ' ');
+
+                        if(value == "Organic Matter"){
+                            category = "Organic Matter";
+                        } else if (value == "pH-level"){
+                            category = "Soil pH";
+                        } 
+                    
+                        // else if ([""].includes(value)){
+                        //     // Note that we need to search in the TAE table not to get the wrong category
+                        //     category = "TAE";
+                        // }
+
+                        // Including the rows where the nutrients are extremely low
+                        if ((bgColor === "red") || (bar.innerHTML == "Extremely Low")){
+                            dataToRecommend.deficient.push({"category": category, "value": value}); 
+                        } 
+
+                        if (bgColor == "rgb(51, 153, 102)") {
+                            dataToRecommend.optimal.push({"category": category, "value": value});
+                        }
+
+                        if (bgColor === "rgb(0, 255, 255)") {
+                            dataToRecommend.excess.push({"category": category, "value": value});
+                        }
+
+                    } else {
+                        let firstCell = row.querySelector("td");
+                        let firstCellValue = firstCell.textContent.trim().split(' (')[0];
+
+                        if(firstCellValue == "CEC"){
+                            category = "CEC";
+
+                            let secondCell = row.querySelectorAll("td")[1];
+                            let secondCellValue = extractAndJoinNumbers(secondCell.textContent.trim());
+            
+                            if (secondCellValue < 20){ // <= 5
+                                dataToRecommend.deficient.push({"category": category, "value": firstCellValue});
+                            } else if (secondCellValue >= 20 && secondCellValue <= 30){
+                                dataToRecommend.optimal.push({"category": category, "value": firstCellValue});
+                            }
+                            else if (secondCellValue > 30){
+                                dataToRecommend.excess.push({"category": category, "value": firstCellValue});
+                            }
+                        }
+                    }
+                });
+
+                // Working on the Lamotte table
+                let lamotteRows = doc.querySelectorAll("#lamotte-table-body tr");
+                lamotteRows.forEach(row => {
+                    let bar = row.querySelector('.bar');
+                    if (bar) {
+                        let bgColor = bar.style.background.toLowerCase(); // Normalize case
+                        let firstCell = row.querySelector("td");
+                        let value = firstCell.textContent.trim().split(' (')[0];
+                        let category = "Lamotte Reams"; // won't change for Lamotte Reams
+
+                        // Including the rows where the nutrients are extremely low
+                        if ((bgColor === "red") || (bar.innerHTML == "Extremely Low")){
+                            dataToRecommend.deficient.push({"category": category, "value": value}); 
+                        } 
+
+                        if (bgColor == "rgb(51, 153, 102)") {
+                            dataToRecommend.optimal.push({"category": category, "value": value});
+                        }
+
+                        if (bgColor === "rgb(0, 255, 255)") {
+                            dataToRecommend.excess.push({"category": category, "value": value});
+                        }
+                    }
+                });
+
+
+                // Working on the TAE table
+                let taeDoc = parser.parseFromString(report['paddocks'][selectedPaddock]['tae_table'], 'text/html');
+                let taeRows = taeDoc.querySelectorAll("#element-table-body tr");
+                taeRows.forEach(row => {
+                    let bar = row.querySelector('.bar');
+                    if (bar) {
+                        let bgColor = bar.style.background.toLowerCase(); // Normalize case
+                        let firstCell = row.querySelector("td");
+                        let value = firstCell.textContent.trim().split(' (')[0];
+                        let category = "TAE"; // won't change for TAE
+
+                        // Including the rows where the nutrients are extremely low
+                        if ((bgColor === "red") || (bar.innerHTML == "Extremely Low")){
+                            dataToRecommend.deficient.push({"category": category, "value": value}); 
+                        } 
+
+                        if (bgColor == "rgb(51, 153, 102)") {
+                            dataToRecommend.optimal.push({"category": category, "value": value});
+                        }
+
+                        if (bgColor === "rgb(0, 255, 255)") {
+                            dataToRecommend.excess.push({"category": category, "value": value});
+                        }
+                    }
+                });
+
+                formData.append("nutrient_deficient", JSON.stringify(dataToRecommend.deficient));
+                formData.append("nutrient_excess", JSON.stringify(dataToRecommend.excess));
+                formData.append("nutrient_optimal", JSON.stringify(dataToRecommend.optimal));
+
+
+                document.getElementById('recommendationFormResponse').innerHTML = "Generating nutrients explanation..."
+
+                // There are duplicates in the list off nutrients since there are multiple tables
+                // Recommendation to be made based on which table section, or for the full table
+                // summarize per section? per separate table?
+                // or just make a recommendation for the full table with removing duplicate nutrients in each list?
+
+                fetch(urls.generateRecommendations, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json()) // Convert response to JSON
+                .then(async data => {
+                    handleMessageCard(data);
+
+                    if (data.error){
+                        hideLoader();
+                        return;
+                    }
+
+                    report['paddocks'][selectedPaddock]["recommendations"]["explanation"] = data?.combined_nutrients_explanation || ""
+                    report['paddocks'][selectedPaddock]["recommendations"]["form_data"] = {
+                        "crop_group": report['soilCrop'],
+                        // "application_method": formData.get("application_method"),
+                        // "recommendation_type": formData.get("recommendation_type"),
+                        "nutrient_deficient": dataToRecommend.deficient,
+                        "nutrient_excess": dataToRecommend.excess,
+                        "nutrient_optimal": dataToRecommend.optimal
+                    }
+
+                    // Re-ordering the explanation object here to avoid re-ordering in the paddock change event
+                    const explanationOrder = [
+                        "Organic Matter",
+                        "CEC",
+                        "Soil pH",
+                        "Base Saturation",
+                        "Available Nutrients",
+                        "Lamotte Reams",
+                        "TAE",
+                    ];
+
+                    // Create a new object in the desired order
+                    const reorderedExplanation = {};
+
+                    // First, add keys in explanationOrder if they exist
+                    explanationOrder.forEach((key) => {
+                        if (report['paddocks'][selectedPaddock]["recommendations"]["explanation"].hasOwnProperty(key)) {
+                            reorderedExplanation[key] = report['paddocks'][selectedPaddock]["recommendations"]["explanation"][key];
+                        }
+                    });
+
+                    // Optional: Add any remaining keys that weren't specified in the explanationOrder
+                    Object.keys(report['paddocks'][selectedPaddock]["recommendations"]["explanation"]).forEach((key) => {
+                        if (!reorderedExplanation.hasOwnProperty(key)) {
+                            reorderedExplanation[key] = report['paddocks'][selectedPaddock]["recommendations"]["explanation"][key];
+                        }
+                    });
+
+                    // Update the explanation object in report['paddocks'][selectedPaddock]
+                    report['paddocks'][selectedPaddock]["recommendations"]["explanation"] = reorderedExplanation;
+
+                    // Get the explanation object
+                    let explanationObj = report['paddocks'][selectedPaddock]["recommendations"]["explanation"];
+
+                    // Initialize an empty string to store the formatted explanation
+                    let formattedExplanation = "";
+
+                    // Counter for numbering
+                    let count = 1;
+
+                    // Iterate through each key-value pair in the explanation object
+                    for (const [key, value] of Object.entries(explanationObj)) {
+                        formattedExplanation += `<p class="m-0" style="text-align: justify;">${count}. <b>${key}:</b> ${value}<br></p>`;
+                        count++;
+                    }
+
+                    document.getElementById('recommendationFormResponse').innerHTML = `
+                        <p class="m-0"><b>Nutrient explanation:</b></p>
+                        ${formattedExplanation}
+                    `;
+                })
+                .catch(error => {
+                    let data = {
+                        "error": "Error generating table. Please make sure to select the correct fields.",
+                    }
+                    handleMessageCard(data)
+
+                    console.error('Error generating recommendations:', error);
+                });
+            });
+
+        });
+    </script>
+</body>

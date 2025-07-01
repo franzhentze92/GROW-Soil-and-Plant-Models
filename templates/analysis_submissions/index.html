@@ -1,0 +1,664 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block heading %}    
+    <h1 class="mt-4">Submissions Dashboard</h1>
+{% endblock %}
+
+{% block content %}
+    <style>
+        .analysis-table{
+            border-radius: 4px;
+            overflow: hidden;
+            background-color: unset;
+            color: #676a7b;
+            margin: 0;
+        }
+
+        .analysis-table thead tr th{
+            background-color: #f5f5f7;
+        }
+
+        .analysis-table #submissions-table-body tr td{
+            text-align: center !important;
+            vertical-align: middle !important;
+        }
+
+        .analysis-table #submissions-table-body tr{
+            border-bottom: 1px solid color-mix(in sRGB, #262b43 12%, #fff) ;
+        }
+
+        .analysis-table thead tr th, 
+        .analysis-table #submissions-table-body tr td,
+        .analysis-table #submissions-table-footer tr td{
+            padding: 15px;
+        }
+
+        .analysis-table #submissions-table-body tr:hover {
+            background-color: #f5f5f7;
+            cursor: pointer;
+        }
+
+        .search-bar-wrapper input{
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-bar-wrapper button{
+            background-color: #fff;
+            color: #5fb100;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            width: 100px
+        }
+        
+        .search-bar-wrapper button:hover{
+            background-color: #5fb100;
+            color: #fff;
+        }
+
+        .delete-report-btn{
+            background-color: #fff;
+            color: rgb(255, 80, 80);
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .delete-report-btn:hover{
+            background-color: rgb(255, 80, 80);
+            color: #fff;
+        }
+        .delete-hover {
+            background-color: #fff !important;
+            color: #000 !important;
+        }
+
+        .sample-matching-table {
+            width: 100%;
+            font-family: inherit;
+            font-size: inherit;
+            border-collapse: collapse;
+        }
+
+        .sample-matching-table td,
+        .sample-matching-table th {
+            border: none;
+            padding: 4px 8px;
+            background-color: transparent !important;
+            color: inherit;
+            text-align: center;
+            vertical-align: middle;
+            font-weight: 400;
+        }
+
+        .analysis-table tbody tr:hover .sample-matching-table td {
+            background-color: transparent !important;
+            color: inherit;
+        }
+
+        .pagination-button{
+            border-radius: 50%;
+            background-color: unset;
+            border: 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-right: 10px;
+            background-color: #5fb100;
+            color: #fff;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            width: 35px;
+            height: 35px;
+
+        }
+
+        .pagination-controls{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Popup related */
+        /* The Modal (background) */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            padding-top: 100px; /* Location of the box */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+
+        /* Modal Content */
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 350px;
+        }
+
+        /* The Close Button */
+        .close {
+            color: #aaaaaa;
+            text-align: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+
+    </style>
+    <div class="loader-overlay" id="loader">
+        <div class="loader"></div>
+    </div>
+    
+    <!-- The Modal -->
+    <div id="reportDeletionModal" class="modal" onclick>
+        <!-- Modal content -->
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p class="text-center">Report Deleted Successfully.</p>
+        </div>
+    </div>
+
+    <div class="page-padding container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="dashboard-card ">
+                    <h3 class="mb-2 auth-heading"><span>Analysis Submissions</span></h3>
+                        <p class="auth-text mb-0">Find and edit all of your previously saved analysis submissions.</p>
+                </div>
+                <div class="search-bar-wrapper mb-3 d-flex justify-content-center align-items-center">
+                    <input type="text" onchange="searchReports(this.value)" name="idSearchValue" id="idSearchValue" placeholder="Search through saved submissions using the submission report ID, sample assigned farm or paddock names..." class="form-control search-bar">
+                    <button class="ms-2" type="button" onclick="searchReports(document.getElementById('idSearchValue').value)">Search</button>
+                </div>
+                <div class="submissions-table-wrapper">
+                    <p>Click on the table row to display and re-export your previously created analysis.</p>
+                    <div class="card">
+                        <table class="table table-borderless table-responsive analysis-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Report ID</th>
+                                    <th scope="col">Crop Type</th>
+                                    <th scope="col">Lab Type</th>
+                                    {% if analysis_type != 'plant_report' %}
+                                        <th scope="col" style="width: 40%;">Samples</th>
+                                    {% endif %}
+                                    <th scope="col">Created At</th>
+                                    {% if analysis_type == 'plant_report' %}
+                                        <th scope="col">Created By</th>
+                                    {% endif %}
+                                    <th scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="submissions-table-body">
+                            </tbody>
+                            <tfoot id="submissions-table-footer">
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'js/custom.js' %}"></script>
+<script>
+    const urls = {
+        tokenToUser: "{% url 'token_to_user' %}",
+        getUserReports: "{% url 'get_user_reports' %}",
+        search_reports_by_id: "{% url 'search_reports_by_id' %}",
+        delete_user_report_by_id: "{% url 'delete_user_report_by_id' %}",
+    };
+    
+    let auth_user = {};
+
+    /**
+     * Function to get query parameter by name from the URL
+     * @param {string} name - The name of the query parameter
+     * @return {string|null} Returns the value of the query parameter or null if not found
+     */
+    function getQueryParam(name) { 
+        const params = new URLSearchParams(window.location.search); 
+        return params.get(name);    
+    }
+
+    /**
+     * Function to set a cookie
+     * @param {string} name - The name of the cookie
+     * @param {string} value - The value of the cookie
+     * @param {number} days - The number of days until the cookie expires
+     * @return {null} Returns nothing
+     */
+    function setCookie(name,value,days) {
+        var expires = "";
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days*24*60*60*1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+    }
+
+    /**
+     * Function to get a cookie by name
+     * @param {string} name - The name of the cookie
+     * @return {string|null} Returns the value of the cookie or null if not found
+     */
+    function getCookie(name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0;i < ca.length;i++) {
+            var c = ca[i];
+            while (c.charAt(0)==' ') c = c.substring(1,c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+        }
+        return null;
+    }
+
+    function getUserReports(page = 1, pageSize = 10) {
+        fetch(urls.getUserReports, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                user_email: auth_user?.email,
+                user_id: auth_user?.id,
+                analysis_type: getQueryParam('type'),
+                user_role: getQueryParam('role'),
+                page: page,
+                page_size: pageSize,
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoader();
+
+            console.log(data);
+
+            const tableBody = document.getElementById('submissions-table-body');
+            tableBody.innerHTML = '';
+
+            if (data.reports && data.reports.length > 0) {
+                data.reports.forEach(value => {
+                    const newRow = document.createElement('tr');
+
+                    const sampleFarmPaddock = 
+                    value?.report_data?.sample_paddock_farm_assignments ? 
+                    `
+                        <table class="sample-matching-table">
+                            <thead>
+                                <tr>
+                                    <th>Sample</th>
+                                    <th>Farm</th>
+                                    <th>Paddock</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            ${
+                                value?.report_data?.sample_paddock_farm_assignments?.map((item) => {
+                                const sample = item?.sample || "";
+                                const farm = item?.farm || "No farm was assigned.";
+                                const paddock = item?.paddock || "No paddock was assigned.";
+                                return `<tr>
+                                            <td style="font-weight: 100;">${sample}</td>
+                                            <td style="font-weight: 100;">${farm}</td>
+                                            <td style="font-weight: 100;">${paddock}</td>
+                                        </tr>`;
+                                }).join('')
+                            }
+                            </tbody>
+                        </table>
+                        ` : '';
+
+                    newRow.innerHTML = `
+                        <td>${value.report_id}</td>
+                        <td>${value.analysis_type == "soil" ? value.report_data.soilCrop : value.report_data.leafCrop}</td>
+                        <td>${value.analysis_type == "soil" ? value.report_data.soilLabType : value.report_data.plantLabType}</td>
+                        ${value.analysis_type != 'plant_report' ? `
+                            <td>
+                                <div style="max-height: 180px; overflow-y: auto;">
+                                    ${sampleFarmPaddock}
+                                </div>
+                            </td>
+                        ` : ''}
+                        <td>${new Date(value.created_at).toLocaleDateString()}</td>
+                        ${value.analysis_type == 'plant_report' ? `
+                            <td>
+                                <div style="max-height: 180px; overflow-y: auto;">
+                                    ${value?.user_email}
+                                </div>
+                            </td>
+                        ` : ''}
+                        <td class="p-0" style="position: relative;">
+                            <button class="delete-report-btn" type="button" style="position: absolute; top: 0; left: 0;">Delete</button>
+                        </td>
+                    `;
+
+                    newRow.onclick = function() {
+                        window.location.href = `/analysis-submissions/${value.report_id}/?token=${getCookie("api_bearer") || getQueryParam('token')}&type=${getQueryParam('type')}&role=${getQueryParam('role')}`;
+                    };
+
+                    newRow.querySelector('.delete-report-btn').addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        DeleteReport(value.report_id);
+                    });
+
+                    tableBody.appendChild(newRow);
+                });
+            }
+
+            const tableFooter = document.getElementById('submissions-table-footer');
+            tableFooter.innerHTML = '';
+            const newFooterRow = document.createElement('tr');
+            newFooterRow.innerHTML = `
+                <td colspan="6">
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <p class="mb-0">
+                            Found ${data.total_reports} report(s).
+                        </p>
+                        <div id="pagination-controls" class="pagination-controls"></div>
+                    </div>
+                </td>
+            `;
+            tableFooter.appendChild(newFooterRow);
+
+            renderPaginationControls(data.current_page, data.num_pages);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    function renderPaginationControls(currentPage, totalPages) {
+        const paginationContainer = document.getElementById('pagination-controls');
+        paginationContainer.innerHTML = '';
+
+        if (totalPages <= 1) return;
+
+        const createButton = (text, page) => {
+            const button = document.createElement('button');
+            button.innerHTML = text;
+            button.disabled = page === currentPage;
+            button.className = 'pagination-button';
+            button.addEventListener('click', () => getUserReports(page));
+            return button;
+        };
+
+        if (currentPage > 1) {
+            paginationContainer.appendChild(createButton('<span class="material-symbols-outlined p-0 m-0">chevron_left</span>', currentPage - 1));
+        }
+
+        for (let i = 1; i <= totalPages; i++) {
+            paginationContainer.appendChild(createButton(i, i));
+        }
+
+        if (currentPage < totalPages) {
+            paginationContainer.appendChild(createButton('<span class="material-symbols-outlined p-0 m-0">chevron_right</span>', currentPage + 1));
+        }
+    }
+
+    function highlightText(text, searchValue) {
+        if (!searchValue) return text;
+        const regex = new RegExp(searchValue, 'gi');
+        return text?.replace(regex, (match) => `<span style="background-color: yellow;">${match}</span>`);
+    }
+
+    function searchReports(value){
+        if (value.length < 1) {
+            // if the search value is empty, get all reports
+            getUserReports();
+            return;
+        }
+
+        // search_reports_by_id
+        showLoader()
+        
+        fetch(urls.search_reports_by_id, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                partial_id: value,
+                analysis_type: getQueryParam('type'),
+                user_role: getQueryParam('role'),
+            })
+        }).then(response => response.json())
+        .then(data => {
+            // hide loader
+            hideLoader()
+
+            console.log("Search Results: ", data);
+
+            // Get the table body element
+            const tableBody = document.getElementById('submissions-table-body');
+            tableBody.innerHTML = ''; // Clear previous results
+            
+            // Create a new row
+            const searchValue = document.getElementById('idSearchValue').value;
+
+            if (data.reports && Object.keys(data.reports).length > 0) {
+                for (let [key, value] of Object.entries(data.reports)) {
+                    // Create a new row
+                    const newRow = document.createElement('tr');
+
+                    // Note that we want to highlight the text inside the value?.report_id with yellow color that is equal to the search input value
+                    const highlightedReportId = highlightText(value?.report_id, searchValue);
+
+                    const sampleFarmPaddock = 
+                    value?.report_data?.sample_paddock_farm_assignments ? 
+                    `
+                        <table class="sample-matching-table">
+                            <thead>
+                                <tr>
+                                    <th>Sample</th>
+                                    <th>Farm</th>
+                                    <th>Paddock</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            ${
+                                value?.report_data?.sample_paddock_farm_assignments?.map((item) => {
+                                const sample = item?.sample || "";
+                                const farm = highlightText(item?.farm, searchValue) || "No farm was assigned.";
+                                const paddock = highlightText(item?.paddock, searchValue) || "No paddock was assigned.";
+                                return `<tr>
+                                            <td style="font-weight: 100;">${sample}</td>
+                                            <td style="font-weight: 100;">${farm}</td>
+                                            <td style="font-weight: 100;">${paddock}</td>
+                                        </tr>`;
+                                }).join('')
+                            }
+                            </tbody>
+                        </table>
+                        ` : '';
+
+                    // Object.keys(value?.report_data?.paddocks).join(', ')
+                    newRow.innerHTML = `
+                        <td>${highlightedReportId}</td>
+                        <td>${value.analysis_type == "soil" ? value?.report_data.soilCrop : value?.report_data.leafCrop}</td>
+                        <td>${value.analysis_type == "soil" ? value?.report_data.soilLabType : value?.report_data.plantLabType }</td>
+                        ${value.analysis_type != 'plant_report' ? `
+                            <td>
+                                <div style="max-height: 180px; overflow-y: auto;">
+                                    ${sampleFarmPaddock}
+                                </div>
+                            </td>
+                        ` : ''}
+                        <td>${new Date(value?.created_at).toLocaleDateString()}</td>
+                        ${value.analysis_type == 'plant_report' ? `
+                            <td>
+                                <div style="max-height: 180px; overflow-y: auto;">
+                                    ${value?.user_email}
+                                </div>
+                            </td>
+                        ` : ''}
+                        <td class="p-0" style="position: relative;"><button class="delete-report-btn" type="button" style="position: absolute; top: 0; left: 0;">Delete</button></td>
+                    `;
+
+                    // add onclick event to the row
+                    newRow.onclick = function() {
+                        window.location.href = `/analysis-submissions/${value?.report_id}/?token=${getCookie("api_bearer") || getQueryParam('token')}&type=${getQueryParam('type')}&role=${getQueryParam('role')}`;
+                    };
+
+                    newRow.querySelector('.delete-report-btn').addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        DeleteReport(value?.report_id);
+                    });
+                    
+                    // Append the new row to the table body
+                    tableBody.appendChild(newRow);
+                }
+            }else {
+                // // Create a new row
+                // const newRow = document.createElement('tr');
+
+                // newRow.innerHTML = `
+                //     <td colspan="6" class="text-center">No reports found for '${searchValue}' report ID.</td>
+                // `;
+                
+                // // Append the new row to the table body
+                // tableBody.appendChild(newRow);
+            }
+
+            // adding the number of reports found to the footer
+            const tableFooter = document.getElementById('submissions-table-footer');
+            tableFooter.innerHTML = ''; // Clear previous results
+            const newFooterRow = document.createElement('tr');
+            newFooterRow.innerHTML = `
+                <td colspan="6">Found ${data?.reports?.length} report(s) for '${searchValue}' search value.</td>
+            `;
+            tableFooter.appendChild(newFooterRow);
+
+            // to have a better user experience, add hover effect to the delete button 
+            document.querySelectorAll('.delete-report-btn').forEach(button => {
+                button.addEventListener('mouseenter', () => {
+                    const row = button.closest('tr');
+                    row.classList.add('delete-hover');
+                });
+
+                button.addEventListener('mouseleave', () => {
+                    const row = button.closest('tr');
+                    row.classList.remove('delete-hover');
+                });
+            });
+
+        }).catch(error => {
+            console.error('Error:', error);
+        });
+
+    }
+
+    function DeleteReport(reportId) {
+        // show loader
+        showLoader()
+
+        fetch(urls.delete_user_report_by_id, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                report_id: reportId
+            })
+        }).then(response => response.json())
+        .then(data => {
+            // hide loader
+            hideLoader()
+            if (data.status === 'success') {
+                // instead of alert, display a popup message
+                var modal = document.getElementById("reportDeletionModal");
+                modal.style.display = "block";
+                
+                // Get the <span> element that closes the modal
+                var span = document.getElementsByClassName("close")[0];
+
+                // When the user clicks on <span> (x), close the modal
+                span.onclick = function() {
+                    modal.style.display = "none";
+                }
+
+                // When the user clicks anywhere outside of the modal, close it
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                        modal.style.display = "none";
+                    }
+                }
+
+                getUserReports();
+            } else {
+                alert('Error deleting report');
+            }
+        }).catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    
+    document.addEventListener('DOMContentLoaded', async function () {
+        // when the dashboard is loaded, set up the token in the cookies
+        // Check if the user is logged in using the token passed from the URL
+        const token = getQueryParam('token');
+        if (token) {setCookie('api_bearer', token, 365)}
+        
+        // Show loader to process user data and list reports
+        showLoader()
+
+        // Get the users details from the management application based on the token
+        // Get the list of farms and paddocks and place them into farmsManagementData placeholder
+        await fetch(urls.tokenToUser, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(
+                {
+                    "token": getCookie("api_bearer") || getQueryParam('token'),
+                    "role": getQueryParam('role')
+                }
+            )
+        })
+        .then(response => response.json())
+        .then(res => {
+            // Check if the response is successful
+            if (res.status === 'success') { 
+                auth_user = res?.user || {};
+                console.log(auth_user);
+            } else {
+                console.error('Error fetching data:', res);
+            }
+        }).then(() => {
+            getUserReports();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+
+    });
+
+  // You could add functionality like filtering the table by Report ID using the search input
+</script>
+{% endblock %}

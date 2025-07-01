@@ -1,0 +1,2250 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head_extra %}
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+{% endblock %}
+
+{% block style%}       
+<style>
+    .box-shadow-card {
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        border-radius: 10px;
+        background-color: #fff;
+    }
+
+    .analysis-table{
+        border-radius: 4px;
+        overflow: hidden;
+        background-color: unset;
+        color: #676a7b;
+        margin: 0;
+    }
+
+    .analysis-table thead tr th{
+        background-color: #f5f5f7;
+    }
+
+    .analysis-table #submissions-table-body tr td, .analysis-table tr {
+        text-align: center !important;
+        vertical-align: middle !important;
+    }
+
+    .analysis-table tr p {
+        margin: 5px 0;
+    }
+
+    .analysis-table #submissions-table-body tr{
+        border-bottom: 1px solid color-mix(in sRGB, #262b43 12%, #fff) ;
+    }
+
+    .analysis-table thead tr th, 
+    .analysis-table #submissions-table-body tr td,
+    .analysis-table #submissions-table-footer tr td{
+        padding: 15px;
+    }
+
+    .analysis-table #submissions-table-body tr:hover {
+        background-color: #f5f5f7;
+    }
+
+    .analysis-table tbody tr:hover {
+        background-color: transparent !important;
+    }
+
+    .pagination-button{
+        border-radius: 50%;
+        background-color: unset;
+        border: 0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-right: 10px;
+        background-color: #5fb100;
+        color: #fff;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0;
+        width: 35px;
+        height: 35px;
+
+    }
+
+    .pagination-controls{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .analysis-summary-wrapper{
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        /* justify-content: space-between; */
+        /* padding: 0 20px; */
+    }
+    .analysis-wrapper-upper-notes{
+        margin-bottom: 20px;
+        color: #676a7b;
+    }
+
+    #chart {
+        width: 100%;
+    }
+
+    .chart-category-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 30px;
+        margin-top: 20px;
+    }
+
+    .chart-category-wrapper > div {
+        flex: 0 1 200px; /* Example width to allow wrapping */
+    }
+
+    .charts-wrapper{
+        margin-top: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        border-radius: 10px;
+        background-color: #fff;
+    }
+
+    .charts-wrapper h6{
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    
+    /* Style the tab */
+    .tab {
+        overflow: hidden;
+        border: 1px solid #ccc;
+        background-color: #f5f5f7;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+    }
+
+    /* Style the buttons inside the tab */
+    .tab button {
+        background-color: inherit;
+        /* float: left; */
+        border: none;
+        outline: none;
+        cursor: pointer;
+        padding: 14px 16px;
+        transition: 0.3s;
+        font-size: 17px;
+        width: 100%;
+    }
+
+    /* Change background color of buttons on hover */
+    .tab button:hover, .tab button.active {
+        color: #2E93fA;
+        border-radius: 4px;
+        background-color: #fff;
+    }
+
+    /* Style the tab content */
+    .tabcontent {
+        display: none;
+    }
+
+    .submissions-table-wrapper button {
+        background-color: unset;
+        color: #676a7b;
+        border: 1px solid #676a7b;
+        border-radius: 4px;
+        cursor: pointer;
+        padding: 10px 20px;
+    }
+
+    .submissions-table-wrapper button:hover, .submissions-table-wrapper button.active {
+        background-color: #676a7b;
+        color: #fff;
+    }
+
+    .popup {
+        display: none; /* Hidden by default */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .popup-content {
+        border: 2px soild #000;
+        background-color: #eee;
+        padding: 30px;
+        border-radius: 8px;
+        max-width: 65%;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        position: relative;
+    }
+
+    .popup-content .popup-header{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .popup-content .popup-chart-wrapper{
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        max-width: 100%;
+        height: 100%;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 20px;
+
+        display: flex;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .popup-content .popup-table-wrapper {
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        max-width: 100%;
+        border-radius: 4px;
+        overflow-y: auto;
+        overflow-x: none;
+        height: 400px;
+    }
+
+    .popup-content .popup-chart-wrapper .popup-chart-box {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 20px;
+        width: fit-content;
+        font-weight: bold;
+    }
+
+    .close-btn {
+        /* position: absolute;
+        top: 10px;
+        right: 15px; */
+        font-size: 24px;
+        cursor: pointer;
+    }
+
+</style>
+{% endblock %}
+
+
+{% block heading %}    
+    <h1 class="mt-4">Analysis Dashboard</h1>
+{% endblock %}
+
+
+{% block content %}
+<div class="loader-overlay" id="loader">
+    <div class="loader"></div>
+</div>
+<div class="page-padding container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <h3 class="mb-2 auth-heading"><span>{{ analysis_type|capfirst }} Analytics</span></h3>
+                    <p class="auth-text mb-0">View and manage nutrient profiles, test results, and historical {{ analysis_type }} data from your submissions.</p>
+            </div>
+
+            <h6 class="analysis-wrapper-upper-notes">Options available in the dropdowns are based on your saved analysis reports.</h6>
+            <div class="analysis-summary-wrapper">
+                <div class="form-floating w-100" id="cropGroupForm">
+                    <select id="cropGroup" name="crop_group" class="form-select" required>
+                        <option selected disabled value="">Select a Crop Group</option>
+                    </select>
+                    <label for="crop_group" class="form-label">Select Crop Group:</label>
+                </div>
+                <div class="form-floating w-100">
+                    <select id="cropType" name="crop_type" class="form-select" required>
+                        <option selected disabled value="">Select a Crop</option>
+                    </select>
+                    <label for="crop_type" class="form-label">Select a Crop:</label>
+                </div>
+                <div class="form-floating w-100">
+                    <select id="labType" name="lab_type" class="form-select" required>
+                        <option selected disabled value="">Select a Lab type</option>
+                    </select>
+                    <label for="lab_type" class="form-label">Select a Lab type:</label>
+                </div>
+                <div class="form-floating w-100">
+                    <select id="userFarms" name="user_farms" class="form-select" required>
+                        <option selected disabled value="">Select a Farm</option>
+                    </select>
+                    <label for="user_farms" class="form-label">Select a Farm:</label>
+                </div>
+                <div class="form-floating w-100">
+                    <select id="userPaddocks" name="user_paddocks" class="form-select" required>
+                        <option selected disabled value="">Select a Paddock</option>
+                    </select>
+                    <label for="user_paddocks" class="form-label">Select a Paddock:</label>
+                </div>
+            </div>
+            <p id="selected-reports-count" class="mt-3 mb-3"></p>
+        </div>
+    </div>
+
+    <div class="row  d-none" id="table-container">
+        <div class="col-12">
+            <div class="submissions-table-wrapper">
+                <div class="card">
+                    <table class="table table-borderless table-responsive analysis-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Report ID</th>
+                                <th scope="col">Date</th>
+                                <th scope="col" style="width: 40%;">Paddock</th>
+                                <!-- <th scope="col">Crop Type</th> -->
+                                <!-- <th scope="col">Lab Type</th> -->
+                                <th scope="col">Overall Score</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="submissions-table-body">
+                        </tbody>
+                        <tfoot id="submissions-table-footer">
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-3 d-none" id="tab-container">
+        <div class="col-12">
+            <div class="tab" id="main-tabs">
+                <button class="tablinks" onclick="openMainTab(event, 'overall-health')" id="defaultTab">Overall Health</button>
+                <button class="tablinks" onclick="openMainTab(event, 'nutrient-categoris')">Nutrient Categories</button>
+                <button class="tablinks" disabled>Fertilization</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3 tabcontent main-tab-content" id="overall-health">
+        <div class="col-12">
+            <div id="line-charts-container" class="line-charts-container">
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3 tabcontent main-tab-content" id="nutrient-categoris">
+        <div class="col-12">
+            <div class="box-shadow-card">
+                {% if analysis_type != "plant"%}
+                    <h4 class="fw-bold mb-4 mt-3">Nutrient Categories Analysis</h4>
+                    <div class="tab" id="nutrient-categoris-tab">
+                    </div>
+                {% else %}
+                    <h4 class="fw-bold mb-4 mt-3">Nutrient Trends Over Time</h4>
+                {% endif %}
+                <div id="bar-charts-container" class="bar-charts-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="paddock-popup" class="popup">
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'js/custom.js' %}"></script>
+<script defer>
+    const urls = {
+        tokenToUser: "{% url 'token_to_user' %}",
+        getUserReports: "{% url 'get_user_reports' %}",
+        listPaddocks: "{% url 'list_paddocks' %}",
+    };
+
+    let charts = {};
+    let allReports = []
+    let selectedReports = [];
+
+    /**
+     * Function to get query parameter by name from the URL
+     * @param {string} name - The name of the query parameter
+     * @return {string|null} Returns the value of the query parameter or null if not found
+     */
+    function getQueryParam(name) { 
+        const params = new URLSearchParams(window.location.search); 
+        return params.get(name);    
+    }
+
+    /**
+     * Function to set a cookie
+     * @param {string} name - The name of the cookie
+     * @param {string} value - The value of the cookie
+     * @param {number} days - The number of days until the cookie expires
+     * @return {null} Returns nothing
+     */
+    function setCookie(name,value,days) {
+        var expires = "";
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days*24*60*60*1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+    }
+
+    /**
+     * Function to get a cookie by name
+     * @param {string} name - The name of the cookie
+     * @return {string|null} Returns the value of the cookie or null if not found
+     */
+    function getCookie(name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0;i < ca.length;i++) {
+            var c = ca[i];
+            while (c.charAt(0)==' ') c = c.substring(1,c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+        }
+        return null;
+    }
+
+    function openMainTab(evt, tabId) {
+        // Hide all main tab content
+        const contents = document.querySelectorAll(".main-tab-content");
+        contents.forEach(div => div.style.display = "none");
+
+        // Remove active from all main tab buttons
+        const tabLinks = document.querySelectorAll("#main-tabs .tablinks");
+        tabLinks.forEach(btn => btn.classList.remove("active"));
+
+        // Show the selected main tab content
+        const tab = document.getElementById(tabId);
+        if (tab) tab.style.display = "block";
+
+        // Mark the clicked button as active
+        evt.currentTarget.classList.add("active");
+        }
+
+    function openSubTab(evt, tabId) {
+        const container = evt.currentTarget.closest(".tab").parentElement;
+
+        // Hide only sub-tab contents within this section
+        const subTabs = container.querySelectorAll(".sub-tab-content");
+        subTabs.forEach(div => div.style.display = "none");
+
+        // Remove active state from sibling buttons
+        const buttons = evt.currentTarget.parentElement.querySelectorAll(".tablinks");
+        buttons.forEach(btn => btn.classList.remove("active"));
+
+        // Show the selected sub-tab content
+        const tab = document.getElementById(tabId);
+        if (tab) tab.style.display = "block";
+
+        evt.currentTarget.classList.add("active");
+    }
+
+
+    function createPopupRow(
+        category = "",
+        parenthetical = "",
+        your_level = "",
+        ideal_level_min = "",
+        ideal_level_max = "",
+        deficient = "",
+        excessive = "",
+        metric = "",
+        table_category = "",
+        nutrient_score = 0,
+        deviation_score = 0
+    ) {
+        
+        let row = '';
+
+        // List of elements that should show 0 when they have '<' symbol
+        const zeroIfLessThan = ['Calcium', 'Magnesium', 'Potassium', 'Sodium', 'Aluminium'];
+        
+        // Handle display value for values with "<" symbol
+        let displayValue;
+        let hasLessThanSymbol;
+        let cleanValue;
+
+        if (typeof your_level === 'object') {
+            // This is for TAE table - use display_value with icon
+            displayValue = your_level.display_value || your_level.value;
+            // Check both has_less_than flag and if display_value contains "<" symbol
+            hasLessThanSymbol = your_level.has_less_than || 
+                            (your_level.display_value && your_level.display_value.includes('<'));
+            cleanValue = your_level.value;
+        } else {
+            // This is for Albrecht table - clean up the value
+            hasLessThanSymbol = String(your_level).includes('<');
+            
+            // Only convert to 0 for specific elements
+            if (hasLessThanSymbol && zeroIfLessThan.includes(category)) {
+                cleanValue = 0;
+                displayValue = '0';
+            } else {
+                cleanValue = your_level;
+                displayValue = your_level;
+            }
+        }
+
+        if (!hasLessThanSymbol && !isNaN(Number(displayValue))) {
+            displayValue = Number(displayValue).toFixed(2) || displayValue;
+        }
+
+        // Extract values for progress bar
+        const lower = extractAndJoinNumbers(String(ideal_level_min));
+        const upper = extractAndJoinNumbers(String(ideal_level_max));
+        const excessiveValue = extractAndJoinNumbers(String(excessive)) || (upper * 1.15);
+        const deficientValue = extractAndJoinNumbers(String(deficient)) || (lower * 0.75);              
+
+        row = `
+        <tr id="${table_category}">
+            <td>
+                <span>
+                    <p>
+                        ${category}
+                    </p>
+                </span>
+            </td>
+            <td>
+                <span class="d-flex align-items-center justify-content-around">
+                    <span>${displayValue}</span> <span>${metric}</span>
+                </span>
+            </td>
+            <td>
+                <span class="td-bar">
+                    ${ !['Colour', 'Texture'].includes(category) ? `
+                        <span class="d-flex align-items-center justify-content-around">
+                            <span>${ideal_level_min && ideal_level_min != '' ? ideal_level_min + ' - ' : ''} ${ideal_level_max}</span> <span>${metric}</span>
+                        </span> 
+                    ` : '<span"></span>'}
+                </span>
+            </td>
+            ${ !['Colour', 'Texture'].includes(category) ? `
+                <td style="color: ${colorCondition(deviation_score * 100)}">${Math.round(deviation_score * 100) / 100}%</td>
+                <td style="color: ${colorCondition(deviation_score * 100)}">${textCondition(deviation_score * 100)}</td>
+                <td style="color: ${scoreColorCondition(nutrient_score)}">${nutrient_score.toFixed(2)}</td>
+                ` : `
+                <td></td>
+                <td></td>
+                <td></td>
+            `}
+        </tr>`;
+        return row;
+    }
+
+
+
+    /**
+     * Calculate a smooth score from deviation (%). Scores are 100 at 0 deviation, decrease quadratically, 
+     * and are zero if deviation >= cutoff (in %).
+     * @param {number} deviation The deviation value.
+     * @param {number} D The deviation factor.
+     * @param {number} n The exponent for the quadratic function.
+     * @param {number} cutoff The cutoff value for the score.
+     * 
+     * @returns {number} The calculated score.
+    */
+    function smoothScore(deviation, D=50, n=2, cutoff=250) {
+        
+        let x = Math.abs(deviation) * 100;  // Convert fraction to percentage
+        if (x >= cutoff) {
+            return 0;
+        }
+        let score = 100 / (1 + Math.pow((x / D), n));
+        return Math.max(Math.min(score, 100), 0);
+    }
+
+    function displayPaddockDetails(report_id, selectedReportSampleName){
+        // Get selected report paddock data
+        const selectedReportSample = allReports.find(report => report.report_id === report_id);
+        const selectedReportSampleData = selectedReportSample?.report_data?.paddocks[selectedReportSampleName];
+        const overall_score = selectedReportSampleData?.overall_scores || 0;
+
+        const popup = document.getElementById('paddock-popup');
+        popup.style.display = 'flex';
+
+        // Clear previous content
+        popup.innerHTML = '';
+
+        // Create a new div for the popup content
+        const popupContent = document.createElement('div');
+        popupContent.className = 'popup-content';
+
+        popupContent.innerHTML = `
+            <div class="popup-header">
+                <p class="m-0 fs-5 fw-bold">Analysis Details - ${selectedReportSampleName}</p>
+                <span class="close-btn" id="closePopupBtn">&times;</span>
+            </div>
+            <div class="popup-chart-wrapper">
+                <div class="popup-chart-box">
+                    <p class="mt-3 fs-5">{{ analysis_type|capfirst }} Overall Health Score</p>
+                    <div id="popup-chart"></div>
+                    <p class="mt-5 fs-5" style="color: ${scoreColorCondition(overall_score)};">${textCondition(overall_score)}</p>    
+                </div>
+            </div>
+            <div class="popup-table-wrapper">
+                <p class="mt-3 fs-5">Nutrient Data Table</p>
+                <table class="table table-borderless analysis-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Nutrient</th>
+                            <th scope="col">Actual</th>
+                            <th scope="col">Ideal</th>
+                            <th scope="col">Deviation</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="popup-table-body">
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        // Generating the table body
+        // CEC and TEC for soil with condition since they don't occur in plant analysis
+        const popupTableBody = popupContent.querySelector('#popup-table-body');
+        if(selectedReportSample.analysis_type == "soil"){
+            popupTableBody.innerHTML += `
+                <tr><td colspan="6" class="fw-bold">Available Nutrients</td></tr>
+                <tr>
+                    <td>CEC</td>
+                    <td>
+                        <span class="d-flex align-items-center justify-content-around">
+                            <span>${selectedReportSampleData?.dataset_processed?.cec || 'N/A'}</span> <span></span>
+                        </span>
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>TEC</td>
+                    <td>
+                        <span class="d-flex align-items-center justify-content-around">
+                            <span>${selectedReportSampleData?.dataset_processed?.tec || 'N/A'}</span> <span></span>
+                        </span>
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            `;
+        }
+
+        let rowsText = ``;
+
+        if (selectedReportSample.analysis_type === "soil"){
+            let available_nutrients_nutrients = selectedReportSampleData?.dataset_processed?.albrecht?.has_comparison || [];
+            let base_saturation_nutrients = selectedReportSampleData?.dataset_processed?.albrecht?.base_saturation || [];
+            let lamotte_nutrients = selectedReportSampleData?.dataset_processed?.lamotte || []; // also has the Nutrient Ratios for brookside labtype
+            let tae_data_nutrients = selectedReportSampleData?.dataset_processed?.tae_data_selected || [];
+            
+            // To display the Available Nutrients table in a specific order
+            // First table > Has comparison rows
+            const orderedFields = [
+                {
+                    name: 'Paramagnetism',
+                    parenthetical: '',
+                    metric: ''
+                },
+                {
+                    name: 'pH-level',
+                    parenthetical: '1:5 water',
+                    metric: ''
+                },
+                {
+                    name: 'Organic Matter',
+                    parenthetical: 'Calc',
+                    metric: '%'
+                },
+                {
+                    name: 'Organic Carbon',
+                    parenthetical: 'LECO',
+                    metric: '%'
+                },
+                {
+                    name: 'Conductivity',
+                    parenthetical: '1:5 water',
+                    metric: 'mS/cm'
+                },
+                {
+                    name: 'Ca/Mg Ratio',
+                    parenthetical: '',
+                    metric: ':1'
+                },
+                {
+                    name: 'Nitrate-N',
+                    parenthetical: 'KCl',
+                    metric: 'ppm'
+                },
+                {
+                    name: 'Ammonium-N',
+                    parenthetical: 'KCl',
+                    metric: 'ppm'
+                },
+                {
+                    name: 'Phosphorus',
+                    parenthetical: 'Mehlich III',
+                    metric: 'ppm'
+                },
+                {
+                    name: 'Phosphorus - Colwell',
+                    parenthetical: '',
+                    metric: 'mg/kg'
+                },
+                {
+                    name: 'Phosphorus Buffer Index',
+                    parenthetical: '',
+                    metric: ''
+                },
+                {
+                    name: 'Phosphorus - acid extractable',
+                    parenthetical: '',
+                    metric: 'mg/kg'
+                },
+                {
+                    name: 'Calcium',
+                    parenthetical: 'Mehlich III',
+                    metric: 'ppm'
+                },
+                {
+                    name: 'Magnesium',
+                    parenthetical: 'Mehlich III',
+                    metric: 'ppm'
+                },
+                {
+                    name: 'Potassium',
+                    parenthetical: 'Mehlich III',
+                    metric: 'ppm'
+                },
+                {
+                    name: 'Sodium',
+                    parenthetical: 'Mehlich III',
+                    metric: 'ppm'
+                },
+                {
+                    name: 'Sulfur',
+                    parenthetical: 'KCl',
+                    metric: 'ppm'
+                },
+                {
+                    name: 'Chloride',
+                    parenthetical: '',
+                    metric: 'ppm'
+                },
+                {
+                    name: 'Aluminium',
+                    parenthetical: '',
+                    metric: 'ppm'
+                },
+                {
+                    name: 'Silicon',
+                    parenthetical: 'CaCl2',
+                    metric: 'ppm'
+                },
+                {
+                    name: 'Boron',
+                    parenthetical: 'Hot CaCl2',
+                    metric: 'ppm'
+                },
+                {
+                    name: 'Iron',
+                    parenthetical: 'DTPA',
+                    metric: 'ppm'
+                },
+                {
+                    name: 'Manganese',
+                    parenthetical: 'DTPA',
+                    metric: 'ppm'
+                },
+                {
+                    name: 'Copper',
+                    parenthetical: 'DTPA',
+                    metric: 'ppm'
+                },
+                {
+                    name: 'Zinc',
+                    parenthetical: 'DTPA',
+                    metric: 'ppm'
+                },
+                {
+                    name: 'Texture',
+                    parenthetical: '',
+                    metric: ''
+                },
+                {
+                    name: 'Colour',
+                    parenthetical: '',
+                    metric: ''
+                },
+                {
+                    name: 'Molybdenum- M3',
+                    parenthetical: '',
+                    metric: 'ppm'
+                },
+                {
+                    name: 'Molybdenum',
+                    parenthetical: '',
+                    metric: 'ppm'
+                },
+                {
+                    name: 'Cobalt- M3',
+                    parenthetical: '',
+                    metric: 'ppm'
+                },
+                {
+                    name: 'Cobalt',
+                    parenthetical: '',
+                    metric: 'ppm'
+                },
+                {
+                    name: 'Selenium- M3',
+                    parenthetical: '',
+                    metric: 'ppm'
+                }  
+            ];
+        
+            orderedFields.forEach(field => {
+                if (field.name === 'Ca/Mg Ratio') {
+                    rowsText += createPopupRow(
+                        category = selectedReportSampleData?.dataset_processed?.caMgRatio.name,
+                        parenthetical = field.parenthetical,
+                        your_level = selectedReportSampleData?.dataset_processed.caMgRatio.value,
+                        ideal_level_min = selectedReportSampleData?.dataset_processed.caMgRatio.lower,
+                        ideal_level_max = selectedReportSampleData?.dataset_processed.caMgRatio.ideal,
+                        deficient = "",
+                        excessive = "",
+                        metric = field.metric,
+                        table_category = "Available_Nutrients",
+                        deviation_score = charts['Available Nutrients']?.find(row => row.name === 'Ca/Mg Ratio')?.data[selectedReportSampleName][0][3] || 0,
+                        nutrient_score = charts['Available Nutrients']?.find(row => row.name === 'Ca/Mg Ratio')?.data[selectedReportSampleName][0][4] || 0
+                    );
+                } else {
+                    const fieldData = available_nutrients_nutrients.find(row => {
+                        // Simple name matching for Boron
+                        if (field.name === 'Boron') {
+                            return row[0] === 'Boron';
+                        }
+
+                        // For DTPA fields, use exact match
+                        if (field.name.includes('DTPA')) {
+                            return row[0] === field.name || row[0].includes(field.name);
+                        }
+
+                        // For other fields, use existing logic
+                        const possibleNames = [
+                            field.name,
+                            field.name.replace(' - ', ' ('),
+                            field.name.replace(' - ', '(')
+                        ];
+                        return possibleNames.includes(row[0]);
+                    });
+
+                    if (fieldData) {                        
+                        // Sometimes the filed is provided with/without M3, so in order not to make extreme changes we append the M3 to the field name
+                        if (fieldData[0] == "Molybdenum"){
+                            field.name = "Molybdenum- M3"
+                        } else if (fieldData[0] == "Cobalt"){
+                            field.name = "Cobalt- M3"
+                        }
+
+                        rowsText += createPopupRow(
+                            category = field.name,
+                            parenthetical = field.parenthetical,
+                            your_level = fieldData[2],
+                            ideal_level_min = fieldData[3],
+                            ideal_level_max = fieldData[4],
+                            deficient = fieldData[5],
+                            excessive = fieldData[6],
+                            metric = field.metric,
+                            table_category = "Available_Nutrients",
+                            deviation_score = charts['Available Nutrients']?.find(crow => crow.name === fieldData[0])?.data[selectedReportSampleName][0][3] || 0,
+                            nutrient_score = charts['Available Nutrients']?.find(crow => crow.name === fieldData[0])?.data[selectedReportSampleName][0][4] || 0
+                        );
+                    }
+                }
+            });
+        
+            // Base Saturation table
+            if (base_saturation_nutrients.length > 0) {
+                rowsText += `<tr><td colspan="6" class="fw-bold">Base Saturation</td></tr>`;
+                
+                // BASE Saturation
+                const baseSaturationOrderedFields = [
+                    {
+                        name: 'Calcium',
+                        parenthetical: '',
+                        metric: '%'
+                    },
+                    {
+                        name: 'Magnesium',
+                        parenthetical: '',
+                        metric: '%'
+                    },
+                    {
+                        name: 'Potassium',
+                        parenthetical: '',
+                        metric: '%'
+                    },
+                    {
+                        name: 'Sodium',
+                        parenthetical: '',
+                        metric: '%'
+                    },
+                    {
+                        name: 'Aluminum',
+                        parenthetical: '',
+                        metric: '%'
+                    },
+                    {
+                        name: 'Hydrogen',
+                        parenthetical: '',
+                        metric: '%'
+                    },
+                    {
+                        name: 'Other Bases',
+                        parenthetical: '',
+                        metric: '%'
+                    },
+                    
+                ];
+
+                baseSaturationOrderedFields.forEach(field => {
+                    // Find the field data in base_saturation array
+                    const fieldData = base_saturation_nutrients.find(row => row[0] === field.name);
+
+                    if (fieldData) {
+                        rowsText += createPopupRow(
+                            category = field.name,
+                            parenthetical = field.parenthetical,
+                            your_level = fieldData[2],
+                            ideal_level_min = fieldData[3],
+                            ideal_level_max = fieldData[4],
+                            deficient = fieldData[5],
+                            excessive = fieldData[6],
+                            metric = field.metric,
+                            table_category = "Base_Saturation",
+                            deviation_score = charts['Base Saturation']?.find(crow => crow.name === fieldData[0])?.data[selectedReportSampleName][0][3] || 0,
+                            nutrient_score = charts['Base Saturation']?.find(crow => crow.name === fieldData[0])?.data[selectedReportSampleName][0][4] || 0
+                        );
+                    }
+                });
+            }
+
+            if (lamotte_nutrients.length > 0) {
+                let labTypeCondtion = document.getElementById('labType').value == 'Brookside Laboratories Inc.';
+
+                if (!labTypeCondtion) {
+                    rowsText += `<tr><td colspan="6" class="fw-bold">Lamotte Reams</td></tr>`;
+    
+                    const lamotteOrderedFields = [
+                        {
+                            name: 'Calcium',
+                            parenthetical: '',
+                            metric: 'ppm'
+                        },
+                        {
+                            name: 'Magnesium',
+                            parenthetical: '',
+                            metric: 'ppm'
+                        },
+                        {
+                            name: 'Phosphorus',
+                            parenthetical: '',
+                            metric: 'ppm'
+                        },
+                        {
+                            name: 'Potassium',
+                            parenthetical: '',
+                            metric: 'ppm'
+                        }
+                    ];
+                    const hasLamotteData = lamotteOrderedFields.some(field =>
+                        lamotte_nutrients.some(row => row[0] === field.name)
+                    );
+    
+                    if (hasLamotteData) {
+                        lamotteOrderedFields.forEach(field => {
+                            const fieldData = lamotte_nutrients.find(row => row[0] === field.name);
+    
+                            if (fieldData) {
+                                rowsText += createPopupRow(
+                                    category = field.name,
+                                    parenthetical = field.parenthetical,
+                                    your_level = fieldData[2],
+                                    ideal_level_min = fieldData[3],
+                                    ideal_level_max = fieldData[4],
+                                    deficient = fieldData[5],
+                                    excessive = fieldData[6],
+                                    metric = field.metric,
+                                    table_category = "Lamotte_Reams",
+                                    deviation_score = charts["Lamotte Reams"]?.find(crow => crow.name === fieldData[0])?.data[selectedReportSampleName][0][3] || 0,
+                                    nutrient_score = charts["Lamotte Reams"]?.find(crow => crow.name === fieldData[0])?.data[selectedReportSampleName][0][4] || 0
+                                );
+                            }
+    
+                        });
+                    }
+
+                } else {
+                    rowsText += `<tr><td colspan="6" class="fw-bold">Nutrient Ratios</td></tr>`;
+
+                    lamotte_nutrients.forEach(data => {
+                        rowsText += createPopupRow(
+                            category = data[0],
+                            parenthetical = data[1],
+                            your_level = data[2],
+                            ideal_level_min = "", // data[3]
+                            ideal_level_max = data[4],
+                            deficient = data[5],
+                            excessive = data[6],
+                            metric = ":1",
+                            table_category = "Nutrient_Ratios",
+                            deviation_score = charts["Nutrient Ratios"]?.find(crow => crow.name === data[0])?.data[selectedReportSampleName][0][3] || 0,
+                            nutrient_score = charts["Nutrient Ratios"]?.find(crow => crow.name === data[0])?.data[selectedReportSampleName][0][4] || 0
+                        );
+                    });
+                }
+            }
+
+        
+            if (tae_data_nutrients.length > 0) {
+                rowsText += `<tr><td colspan="6" class="fw-bold">TAE Nutrients</td></tr>`;
+
+                tae_data_nutrients.forEach(data => {
+                    rowsText += createPopupRow(
+                        category = data.name,
+                        parenthetical = "",
+                        your_level = {  // Pass as object to show icon
+                            value: data.value,
+                            display_value: data.display_value,
+                            has_less_than: data.has_less_than
+                        },
+                        ideal_level_min = data.lower,
+                        ideal_level_max = data.upper,
+                        deficient = data.deficient,
+                        excessive = data.excessive,
+                        metric = "ppm",
+                        table_category = "TAE",
+                        deviation_score = charts['TAE']?.find(crow => crow.name === data.name)?.data[selectedReportSampleName][0][3] || 0,
+                        nutrient_score = charts['TAE']?.find(crow => crow.name === data.name)?.data[selectedReportSampleName][0][4] || 0
+                    );
+                });
+            }
+        } else {
+            // For plant analysis, we use the available_nutrients_nutrients array directly
+            let available_nutrients_nutrients = selectedReportSampleData?.dataset_processed?.elements || [];
+
+            if (available_nutrients_nutrients.length > 0) {
+                available_nutrients_nutrients.forEach((data, index) => {
+                    if (data[0] == "Leaf Washed" || data[0] == "Sample Washed"){
+                        // we don't want to create a row when the element name / category is 'Leaf Washed' or 'Sample Washed'
+                        return;
+                    }
+
+                    rowsText += createPopupRow(
+                        category = data[0], 
+                        parenthetical = data[1],
+                        your_level = data[2], 
+                        ideal_level_min = data[3],
+                        ideal_level_max = data[4], 
+                        deficient = data[5],
+                        excessive = data[6],
+                        metric = data[7],
+                        table_category = "Available_Nutrients",
+                        deviation_score = charts['Available Nutrients']?.find(crow => crow.name === data[0])?.data[selectedReportSampleName][0][3] || 0,
+                        nutrient_score = charts['Available Nutrients']?.find(crow => crow.name === data[0])?.data[selectedReportSampleName][0][4] || 0
+                    );
+                })
+            }
+        }
+
+        // Append the rows for Available Nutrients
+        popupTableBody.innerHTML += rowsText;
+            
+        // Chart and pushing the content has to be at the end
+        // Append the content to the popup
+        popup.appendChild(popupContent);
+
+        // Create the radialBar chart with the selected report overall_scores value
+        const chart = new ApexCharts(document.querySelector("#popup-chart"), {
+            chart: {
+                type: 'radialBar',
+                height: 350,
+                offsetY: 0,
+                offsetX: 0,
+                sparkline: {
+                    enabled: true
+                }
+            },
+            plotOptions: {
+                radialBar: {
+                    startAngle: -90,
+                    endAngle: 90,
+                    hollow: {
+                        margin: 0,
+                        size: '70%',
+                        background: '#fff',
+                        dropShadow: {
+                            enabled: false
+                        }
+                    },
+                    track: {
+                        background: '#f2f2f2',
+                        strokeWidth: '100%',
+                        margin: 0,
+                        dropShadow: {
+                            enabled: false
+                        }
+                    },
+                    dataLabels: {
+                        name: {
+                            show: false,
+                        },
+                        value: {
+                            show: true,
+                            fontSize: '22px',
+                            offsetY: -10, // adjust upward to center
+                            fontWeight: 600,
+                            formatter: function (val) {
+                                return val.toString();
+                            }
+
+                        }
+                    }
+                }
+            },
+            fill: {
+                colors: [scoreColorCondition(overall_score)],
+            },
+            series: [overall_score],
+        });
+
+        chart.render();
+
+        // Attach closing event 
+        const closePopupBtn = document.getElementById('closePopupBtn');
+        closePopupBtn.addEventListener('click', () => {
+            // Hide the popup            
+            popup.style.display = 'none';
+
+            // Clear previous content
+            popup.innerHTML = '';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === popup) {
+                // Hide the popup            
+                popup.style.display = 'none';
+
+                // Clear previous content
+                popup.innerHTML = '';
+            }
+        });
+    }
+
+    function processSelectedReports(selectedReports) {        
+        for (let i = 0; i < selectedReports.length; i++) {
+            const report = selectedReports[i];
+            const sampleName = report?.report_data?.sample_paddock_farm_assignments.find(assignment => assignment['paddock'] === document.getElementById('userPaddocks').value)?.sample;
+
+            const reportData = report.report_data;
+            const sampleData = reportData.paddocks[sampleName];
+
+            // DOM Parser to parse the HTML string            
+            let parser = new DOMParser();
+
+            // Create a new object to store the deviation scores per nutrient in each sample
+            let nutrientScores = {};
+
+            // #Available_Nutrients + #Base_Saturation table
+            if (sampleData?.table && sampleData?.table.trim()){
+                let table_str       = sampleData?.table || "";
+                let table_parsed    = parser.parseFromString(table_str, "text/html");
+                let table_element   = table_parsed.querySelector("table") || "<table></table>";
+                let table_rows      = table_element.querySelectorAll("#element-table-body tr"); 
+                
+                // Main first table rows + base saturation
+                table_rows.forEach(row => {
+
+                    let row_data = row.querySelector("td");
+                    let nutrient_name = row_data.textContent.trim().split(' (')[0];
+                    let nutrient_value = row_data.nextElementSibling.textContent.trim();
+                    let nutrient_catgory = row.id.replace('_', ' ');
+
+                    let ranges_text = row_data.nextElementSibling.nextElementSibling.textContent.trim();
+                    let ranges = ranges_text.split(' - ').map(item => extractAndJoinNumbers(item.trim()));
+                    
+                    if (['CEC', 'TEC'].includes(nutrient_name)) {
+                        nutrient_catgory = 'Available Nutrients';
+                    } 
+
+                    if (['Available Nutrients', 'Base Saturation'].includes(nutrient_catgory)) {
+                        if (['Texture', 'Colour'].includes(nutrient_name)) {
+                            return;
+                        }
+
+                        let score = 0;
+                        let deviation = 0;
+
+                        if (!ranges.includes(NaN) && !['Paramagnetism', 'CEC', 'TEC'].includes(nutrient_name)) {
+                            if (['Phosphorus', 'Calcium', 'Magnesium', 'Boron'].includes(nutrient_name.split(' - ')[1]))  {
+                                ideal = ranges[1];
+                            } else {
+                                ideal = (ranges[0] + ranges[1]) / 2
+                            }
+
+                            // For cases where the range is a single value
+                            if (ranges.length === 1) {
+                                ideal = ranges[0];
+                            }
+
+                            deviation = (parseFloat(extractAndJoinNumbers(nutrient_value)) - ideal) / ideal
+                            score = smoothScore(deviation);
+
+                            if (!nutrientScores[nutrient_catgory]) {
+                                nutrientScores[nutrient_catgory] = {};
+                            }
+
+                            nutrientScores[nutrient_catgory][nutrient_name] = score;
+                        }
+                        
+                        // Every category is a new chart, we append then as an object, then the nutrient name and vaues
+                        // are appended to the chart object
+                        if (!charts[nutrient_catgory]) {
+                            charts[nutrient_catgory] = [];
+                        }
+
+                        // Look for existing nutrient entry
+                        let nutrientEntry = charts[nutrient_catgory].find(entry => entry.name === nutrient_name);
+                    
+                        if (!nutrientEntry) {
+                            // If not found, add a new nutrient entry with data as an object using sampleName
+                            let newEntry = {
+                                name: nutrient_name,
+                                data: {
+                                    [sampleName]: [[
+                                        new Date(report.created_at).getTime(),
+                                        parseFloat(extractAndJoinNumbers(nutrient_value)),
+                                        ranges,
+                                        score,
+                                        deviation
+                                    ]]
+                                }
+                            };
+                            charts[nutrient_catgory].push(newEntry);
+                        } else {
+                            // If exists, add/append data under sampleName key
+                            if (!nutrientEntry.data[sampleName]) {
+                                nutrientEntry.data[sampleName] = [];
+                            }
+
+                            nutrientEntry.data[sampleName].push([
+                                new Date(report.created_at).getTime(),
+                                parseFloat(extractAndJoinNumbers(nutrient_value)),
+                                ranges,
+                                score,
+                                deviation
+                            ]);
+                        }
+
+                    }
+                })
+            }
+
+            // #Tae_Nutrients table
+            if (sampleData?.tae_table && sampleData?.tae_table.trim()){
+                let tae_table_str = sampleData?.tae_table || "";
+                let tae_table_parsed    = parser.parseFromString(tae_table_str, "text/html");
+                let tae_table_element   = tae_table_parsed.querySelector("table") || "<table></table>";
+                let tae_table_rows      = tae_table_element.querySelectorAll("#element-table-body tr");
+
+                // TAE table rows
+                tae_table_rows.forEach(row => {
+                    let row_data = row.querySelector("td");
+
+                    // Check if the row_data has "Explanatory Notes" text to not include it
+                    // <td rowspan="1" colspan="6" class="text-start">
+                    //     <span class="fw-bold"> Explanatory Notes</span>
+                    //     <span class="fw-light">T.A.E. (Total Acid Extractable) *Ideal T.A.E. levels provided by Environmental Analysis Laboratory</span>
+                    // </td>
+                    if (row_data?.textContent.includes("Explanatory Notes")) {
+                        return;
+                    }
+
+                    let ranges_text = row_data.nextElementSibling.nextElementSibling.textContent.trim();
+                    let ranges = ranges_text.split(' - ').map(item => extractAndJoinNumbers(item.trim()));
+
+                    let nutrient_name = row_data.textContent.trim().split(' (')[0];
+                    let nutrient_value = row_data?.nextElementSibling?.textContent?.trim();
+                    let nutrient_catgory = "TAE";
+
+
+                    if (['TAE'].includes(nutrient_catgory)) {  
+                        let score = 0;
+                        let deviation = 0;
+
+                        // Score calculation
+                        if (!ranges.includes(NaN) && !['Paramagnetism', 'CEC', 'TEC'].includes(nutrient_name)) {
+                            if (['Phosphorus', 'Calcium', 'Magnesium', 'Boron'].includes(nutrient_name.split(' - ')[1]))  {
+                                ideal = ranges[1];
+                            } else {
+                                ideal = (ranges[0] + ranges[1]) / 2
+                            }
+
+                            // For cases where the range is a single value
+                            if (ranges.length === 1) {
+                                ideal = ranges[0];
+                            }
+
+                            deviation = (parseFloat(extractAndJoinNumbers(nutrient_value)) - ideal) / ideal
+                            score = smoothScore(deviation);
+
+                            if (!nutrientScores[nutrient_catgory]) {
+                                nutrientScores[nutrient_catgory] = {};
+                            }
+
+                            nutrientScores[nutrient_catgory][nutrient_name] = score;
+                        }
+
+                        // Every category is a new chart, we append then as an object, then the nutrient name and vaues
+                        // are appended to the chart object
+                        if (!charts[nutrient_catgory]) {
+                            charts[nutrient_catgory] = [];
+                        }
+
+                        // Look for existing nutrient entry
+                        let nutrientEntry = charts[nutrient_catgory].find(entry => entry.name === nutrient_name);
+                    
+                        if (!nutrientEntry) {
+                            // If not found, add a new nutrient entry with data as an object using sampleName
+                            let newEntry = {
+                                name: nutrient_name,
+                                data: {
+                                    [sampleName]: [[
+                                        new Date(report.created_at).getTime(),
+                                        parseFloat(extractAndJoinNumbers(nutrient_value)),
+                                        ranges,
+                                        score,
+                                        deviation
+                                    ]]
+                                }
+                            };
+                            charts[nutrient_catgory].push(newEntry);
+                        } else {
+                            // If exists, add/append data under sampleName key
+                            if (!nutrientEntry.data[sampleName]) {
+                                nutrientEntry.data[sampleName] = [];
+                            }
+
+                            nutrientEntry.data[sampleName].push([
+                                new Date(report.created_at).getTime(),
+                                parseFloat(extractAndJoinNumbers(nutrient_value)),
+                                ranges,
+                                score,
+                                deviation
+                            ]);
+                        }
+                    }
+                })
+            }
+
+            // #Lamotte_Reams table
+            if (sampleData?.table && sampleData?.table.trim()){
+                let lamotte_table_str       = sampleData?.table || "";
+                let lamotte_table_parsed    = parser.parseFromString(lamotte_table_str, "text/html");
+                let lamotte_table_element   = lamotte_table_parsed.querySelector("table") || "<table></table>";
+                let lamotte_table_rows      = lamotte_table_element.querySelectorAll("#lamotte-table-body tr");
+
+                // Lamotte table rows
+                lamotte_table_rows.forEach(row => {
+                    let row_data = row.querySelector("td");
+
+                    if (row_data?.textContent.includes("Explanatory Notes")) {
+                        return;
+                    }
+                    
+                    let ranges_text = row_data.nextElementSibling.nextElementSibling.textContent.trim();
+                    let ranges = ranges_text.split(' - ').map(item => extractAndJoinNumbers(item.trim()));
+
+                    let nutrient_name = row_data.textContent.trim().split(' (')[0];
+                    let nutrient_value = row_data.nextElementSibling.textContent.trim();
+                    let nutrient_catgory = row.id.replace('_', ' ');
+                    
+                    if (['Lamotte Reams'].includes(nutrient_catgory)) {   
+                        let scope = 0;
+                        let deviation = 0;
+
+                        // Score calculation
+                        if (!ranges.includes(NaN) && !['Paramagnetism', 'CEC', 'TEC'].includes(nutrient_name)) {
+                            if (['Phosphorus', 'Calcium', 'Magnesium', 'Boron'].includes(nutrient_name.split(' - ')[1]))  {
+                                ideal = ranges[1];
+                            } else {
+                                ideal = (ranges[0] + ranges[1]) / 2
+                            }
+
+                            // For cases where the range is a single value
+                            if (ranges.length === 1) {
+                                ideal = ranges[0];
+                            }
+
+                            deviation = (parseFloat(extractAndJoinNumbers(nutrient_value)) - ideal) / ideal
+                            score = smoothScore(deviation);
+
+                            if (!nutrientScores[nutrient_catgory]) {
+                                nutrientScores[nutrient_catgory] = {};
+                            }
+
+                            nutrientScores[nutrient_catgory][nutrient_name] = score;
+                        }
+
+                        // Every category is a new chart, we append then as an object, then the nutrient name and vaues
+                        // are appended to the chart object
+                        if (!charts[nutrient_catgory]) {
+                            charts[nutrient_catgory] = [];
+                        }
+
+                        // Look for existing nutrient entry
+                        let nutrientEntry = charts[nutrient_catgory].find(entry => entry.name === nutrient_name);
+                    
+                        if (!nutrientEntry) {
+                            // If not found, add a new nutrient entry with data as an object using sampleName
+                            let newEntry = {
+                                name: nutrient_name,
+                                data: {
+                                    [sampleName]: [[
+                                        new Date(report.created_at).getTime(),
+                                        parseFloat(extractAndJoinNumbers(nutrient_value)),
+                                        ranges,
+                                        score,
+                                        deviation
+                                    ]]
+                                }
+                            };
+                            charts[nutrient_catgory].push(newEntry);
+                        } else {
+                            // If exists, add/append data under sampleName key
+                            if (!nutrientEntry.data[sampleName]) {
+                                nutrientEntry.data[sampleName] = [];
+                            }
+
+                            nutrientEntry.data[sampleName].push([
+                                new Date(report.created_at).getTime(),
+                                parseFloat(extractAndJoinNumbers(nutrient_value)),
+                                ranges,
+                                score,
+                                deviation
+                            ]);
+                        }
+                    }
+                })
+            }
+
+            // Nutrient_Ratios table
+            if (sampleData?.nutrient_ratios_table && sampleData?.nutrient_ratios_table.trim()){
+                let nutrient_ratios_table_str       = sampleData?.nutrient_ratios_table || "";
+                let nutrient_ratios_table_parsed    = parser.parseFromString(nutrient_ratios_table_str, "text/html");
+                let nutrient_ratios_table_element   = nutrient_ratios_table_parsed.querySelector("table") || "<table></table>";
+                let nutrient_ratios_table_rows      = nutrient_ratios_table_element.querySelectorAll("#element-table-body tr");
+
+                // Lamotte table rows
+                nutrient_ratios_table_rows.forEach(row => {
+                    let row_data = row.querySelector("td");
+
+                    if (row_data?.textContent.includes("Explanatory Notes")) {
+                        return;
+                    }
+
+                    let ranges_text = row_data.nextElementSibling.nextElementSibling.textContent.trim();
+                    let ranges = ranges_text.split(' - ').map(item => extractAndJoinNumbers(item.trim()));
+
+                    let nutrient_name = row_data.textContent.trim().split(' (')[0];
+                    let nutrient_value = row_data.nextElementSibling.textContent.trim();
+                    let nutrient_catgory = row.id.replace('_', ' ');
+                    
+                    if (['Nutrient Ratios'].includes(nutrient_catgory)) {  
+                        let score = 0;
+                        let deviation = 0;
+
+                        // Score calculation
+                        if (!ranges.includes(NaN) && !['Paramagnetism', 'CEC', 'TEC'].includes(nutrient_name)) {
+                            if (['Phosphorus', 'Calcium', 'Magnesium', 'Boron'].includes(nutrient_name.split(' - ')[1]))  {
+                                ideal = ranges[1];
+                            } else {
+                                ideal = (ranges[0] + ranges[1]) / 2
+                            }
+
+                            // For cases where the range is a single value
+                            if (ranges.length === 1) {
+                                ideal = ranges[0];
+                            }
+
+                            deviation = (parseFloat(extractAndJoinNumbers(nutrient_value)) - ideal) / ideal
+                            score = smoothScore(deviation);
+
+                            if (!nutrientScores[nutrient_catgory]) {
+                                nutrientScores[nutrient_catgory] = {};
+                            }
+
+                            nutrientScores[nutrient_catgory][nutrient_name] = score;
+                        }
+
+                        // Every category is a new chart, we append then as an object, then the nutrient name and vaues
+                        // are appended to the chart object
+                        if (!charts[nutrient_catgory]) {
+                            charts[nutrient_catgory] = [];
+                        }
+
+                        // Look for existing nutrient entry
+                        let nutrientEntry = charts[nutrient_catgory].find(entry => entry.name === nutrient_name);
+                    
+                        if (!nutrientEntry) {
+                            // If not found, add a new nutrient entry with data as an object using sampleName
+                            let newEntry = {
+                                name: nutrient_name,
+                                data: {
+                                    [sampleName]: [[
+                                        new Date(report.created_at).getTime(),
+                                        parseFloat(extractAndJoinNumbers(nutrient_value)),
+                                        ranges,
+                                        score,
+                                        deviation
+                                    ]]
+                                }
+                            };
+                            charts[nutrient_catgory].push(newEntry);
+                        } else {
+                            // If exists, add/append data under sampleName key
+                            if (!nutrientEntry.data[sampleName]) {
+                                nutrientEntry.data[sampleName] = [];
+                            }
+
+                            nutrientEntry.data[sampleName].push([
+                                new Date(report.created_at).getTime(),
+                                parseFloat(extractAndJoinNumbers(nutrient_value)),
+                                ranges,
+                                score,
+                                deviation
+                            ]);
+                        }
+                    }                 
+
+                })
+            }
+
+            
+            sampleData['deviation_scores'] = nutrientScores;
+
+            // Sum the score of all nutrients of all categories
+            let nutrientsScoresValues = Object.values(nutrientScores).reduce((acc, curr) => {
+                return acc.concat(Object.values(curr));
+            }, []).filter(score => typeof score === 'number' && !isNaN(score));
+            
+            let overall_score_avg = nutrientsScoresValues.reduce((acc, score) => acc + score, 0) / nutrientsScoresValues.length;
+            let overall_score = Math.round(overall_score_avg * 100) / 100;
+            sampleData['overall_scores'] = overall_score;
+        }
+
+        // Populate the table with the reports data
+        const tableBody = document.getElementById('submissions-table-body');
+        tableBody.innerHTML = '';
+
+        if (selectedReports && selectedReports.length > 0) {
+            console.log("Selected Reports: ", selectedReports);
+
+            selectedReports.forEach(value => {
+                let selectedReportSampleName = value?.report_data?.sample_paddock_farm_assignments.find(assignment => assignment['paddock'] === document.getElementById('userPaddocks').value)?.sample;
+
+                // Display the samples based on the selected paddock and values inside the sample_paddock_farm_assignments
+                const newRow = document.createElement('tr');
+
+                newRow.innerHTML = `
+                    <td>${value.report_id}</td>
+
+                    <td>${new Date(value.created_at).toLocaleDateString()}</td>
+                    <td>
+                        <div style="max-height: 150px; overflow-y: auto;">
+                            ${value?.report_data?.sample_paddock_farm_assignments.filter(assignment => assignment.paddock == document.getElementById('userPaddocks').value).map(assignment => `
+                                <p class="mb-0">
+                                    ${assignment.sample}
+                                </p>
+                            `).join('')}
+                        </div>
+                    </td>
+
+                    
+                    <!-- <td>${value.analysis_type == "soil" ? value.report_data.soilCrop : value.report_data.leafCrop}</td> -->
+                    
+                    <!-- <td>${value.analysis_type == "soil" ? value.report_data.soilLabType : value.report_data.plantLabType}</td> -->                    
+                    <td>
+                        ${value?.report_data?.sample_paddock_farm_assignments
+                            .filter(assignment => assignment.paddock == document.getElementById('userPaddocks').value)
+                            .map(assignment => {
+                                const score = value?.report_data.paddocks[assignment.sample]?.overall_scores || 0;
+                                const scoreColor = scoreColorCondition(score);
+                                return `
+                                    <p class="mb-0" style="color: ${scoreColor};">
+                                        ${score}
+                                    </p>
+                                `;
+                            }).join('')}    
+                    </td>
+                    <td>
+                        <button onclick="displayPaddockDetails('${value.report_id}', '${selectedReportSampleName}')">
+                            View Details
+                        </button>
+                    </td>
+                `;
+
+                tableBody.appendChild(newRow);
+            });
+
+            // Clear the charts container before rendering new charts
+            let chartWrapper = document.getElementById('bar-charts-container');
+            chartWrapper.innerHTML = ""; // Clear previous charts
+
+            let lineChartWrapper = document.getElementById('line-charts-container');
+            lineChartWrapper.innerHTML = ""; // Clear previous charts
+            
+            // Clean up the nutrient-categoris-tab content
+            if (document.getElementById('nutrient-categoris-tab')){
+                document.getElementById('nutrient-categoris-tab').innerHTML = '';
+            }
+
+            // Show the tab container
+            document.getElementById('tab-container').classList.remove('d-none');
+            document.getElementById('table-container').classList.remove('d-none');
+            
+            document.getElementById('defaultTab').click()
+            
+            console.log("Charts: ", charts);
+            // Now we have the charts object with all the data, we can render them
+            // Plot each category 
+
+            for (const [key, chartsValue] of Object.entries(charts)) {
+                let categoryWrapper = document.createElement('div');
+                categoryWrapper.className = "charts-wrapper {% if analysis_type != 'plant'%} tabcontent {% endif %} sub-tab-content";
+                categoryWrapper.id = key.replace(/\s+/g, '-').replace(/\//g, '-').toLowerCase();
+                categoryWrapper.innerHTML = `
+                    <h6> 
+                        <strong>${key}</strong>
+                    </h6>
+                    <div class="chart-category-wrapper" id="chart-${key.replace(/\s+/g, '-').replace(/\//g, '-').toLowerCase()}"></div>
+                        
+                `;
+                chartWrapper.appendChild(categoryWrapper);
+
+                // add nutrient-categoris-tab content
+                if (document.getElementById('nutrient-categoris-tab')){
+                    document.getElementById('nutrient-categoris-tab').innerHTML += `
+                        <button class="tablinks" onclick="openSubTab(event, '${key.replace(/\s+/g, '-').replace(/\//g, '-').toLowerCase()}')">${key}</button>
+                    `;
+                }
+
+                // Plot each nutrient in the category
+                chartsValue.forEach(nutrient => {
+                    const allSampleData = Object.values(nutrient?.data || {}).flat();
+                    const range = allSampleData[allSampleData.length-1]?.[2] || [];
+
+                    let lower_range_val = (range.length === 1 ? null : range[0]) || null;
+                    let upper_range_val = (range.length === 1 ? range[0] : range[1]) || null;
+
+                    if ((nutrient.name == "Ca/Mg Ratio") || (key == "Base Saturation")) {
+                        lower_range_val = null;
+                        upper_range_val = null;
+                    }
+
+                    let current_score = allSampleData[allSampleData.length-1]?.[3] || 0;
+                    let current_deviation = allSampleData[allSampleData.length-1]?.[4] || 0;
+
+                    plotNutrientBarChart(
+                        data = allSampleData.map(item => item[1]),
+                        categories = allSampleData.map(item => new Date(item[0]).toLocaleDateString()),
+                        nutrient_name = nutrient.name,
+                        lower_range = lower_range_val,
+                        upper_range = upper_range_val,
+                        report_category = key,
+                        current_score = Math.round(current_score * 100) / 100,
+                        current_deviation = Math.round(current_deviation * 100) / 100,
+                    )
+                })
+            }
+
+            // Select the first tab
+            if(document.querySelector('#nutrient-categoris-tab .tablinks')){
+                document.querySelector('#nutrient-categoris-tab .tablinks').click();
+            }
+            
+            // plot the line chart for the overall score
+            lineChartWrapper.innerHTML = `
+                <div class="charts-wrapper">
+                    <h6> 
+                        <strong>Health Score Over Time</strong>
+                    </h6>
+                    <div class="line-charts-scores">
+                        <div id="linear-score-chart"></div>
+                    </div>
+                </div>
+            `;
+
+            let overall_scores = selectedReports.map(report => {
+                const sampleName = report?.report_data?.sample_paddock_farm_assignments.find(assignment => assignment['paddock'] === document.getElementById('userPaddocks').value)?.sample;
+                return {
+                    date: new Date(report.created_at).getTime(),
+                    score: report?.report_data?.paddocks[sampleName]?.overall_scores || 0
+                };
+            });
+
+            overall_scores = overall_scores.filter(item => item.score !== 0); // Filter out zero scores
+            overall_scores.sort((a, b) => a.date - b.date); // Sort by date
+            let overall_score_dates = overall_scores.map(item => new Date(item.date).toLocaleDateString());
+            let overall_score_values = overall_scores.map(item => item.score);
+
+            let chart = new ApexCharts(document.querySelector("#linear-score-chart"), {
+                chart: {
+                    type: 'bar',
+                    height: 350,
+                    toolbar: { show: false },
+                    zoom: { enabled: false }
+                },
+                series: [{
+                    name: 'Overall Score',
+                    data: overall_scores.map(item => ({
+                        x: new Date(item.date).toLocaleDateString(), // or use a format like 'YYYY-MM-DD'
+                        y: item.score
+                    }))
+                }],
+                stroke: {
+                    curve: 'smooth',
+                    width: 2
+                },
+                xaxis: {
+                    type: 'category',
+                    labels: {
+                        style: {
+                            colors: '#676a7b',
+                            fontSize: '12px'
+                        }
+                    }
+                },
+                yaxis: {
+                    min: 0,
+                    max: 100,
+                    labels: {
+                    style: {
+                        colors: '#676a7b',
+                        fontSize: '12px'
+                    }
+                    }
+                },
+                markers: {
+                    size: 6,
+                    colors: undefined,
+                    strokeColors: '#fff',
+                    strokeWidth: 2,
+                    hover: {
+                    size: 8
+                    }
+                },
+                tooltip: {
+                    shared: true,
+                    intersect: false
+                },
+                annotations: {
+                    yaxis: [
+                    {
+                        y: 30,
+                        strokeDashArray: 4,
+                        borderColor: '#FF4560'
+                    },
+                    {
+                        y: 60,
+                        strokeDashArray: 4,
+                        borderColor: '#FEB019'
+                    },
+                    {
+                        y: 80,
+                        strokeDashArray: 4,
+                        borderColor: '#00E396'
+                    }
+                    ]
+                }
+            });
+
+            chart.render();
+        }
+
+    }
+
+    function scoreColorCondition(value){
+        if (value < 30){
+            return "#FF4560"; // Red
+        } else if (value >= 30 && value < 80) {
+            return "#FEB019"; // Yellow
+        }else if (value >= 80) {
+            return "#00E396"; // Green
+        } else {
+            return "#000000"; // Fallback (Black)
+        }
+    }
+
+    function colorCondition(value) {
+        // value is assumed to be in percentage format (e.g., -30, 10, 50)
+        if (value >= -25 && value <= 25) {
+            return "#00E396"; // Green
+        } else if (value < -25) {
+            return "#FF4560"; // Red
+        } else if (value > 25) {
+            return "#FEB019"; // Yellow
+        } else {
+            return "#000000"; // Fallback (Black)
+        }
+    }
+
+    function textCondition(value) {
+        if (value >= -25 && value <= 25) {
+            return "Good";
+        } else if (value < -25) {
+            return "Deficient";
+        } else if (value > 25) {
+            return "Excessive";
+        } else {
+            return "Unknown";
+        }
+    }
+
+    /**
+     * Extract integers and floats from a string.
+     * @param {str} data The paddock data object from the server.
+     * @return {number} The numeric value extracted from the string.
+     */
+    function extractAndJoinNumbers(str) {
+        let match = str.match(/[\d.]+/g); // Extract numbers with/without dots
+        return match ? parseFloat(match.join("")) : NaN; // Join and convert to float
+    }
+
+
+    function filterAndDisplayCharts() {
+        // Select values from dropdowns
+        const cropGroup = document.getElementById('cropGroup').value;
+        const cropType = document.getElementById('cropType').value;
+        const labType = document.getElementById('labType').value;
+        const farm = document.getElementById('userFarms').value;
+        const paddock = document.getElementById('userPaddocks').value;
+
+        charts = {};
+        selectedReports = [];
+
+        let chartWrapper = document.getElementById('bar-charts-container');
+        chartWrapper.innerHTML = ""; // Clear previous charts
+
+        let lineChartWrapper = document.getElementById('line-charts-container');
+        lineChartWrapper.innerHTML = ""; // Clear previous charts
+
+        // Clean up the nutrient-categoris-tab content
+        if (document.getElementById('nutrient-categoris-tab')){
+            document.getElementById('nutrient-categoris-tab').innerHTML = '';
+        }
+        
+        // Show the tab container
+        document.getElementById('tab-container').classList.add('d-none');
+        document.getElementById('table-container').classList.add('d-none');
+
+        // Filter reports
+        selectedReports = allReports.filter(item => {
+            const isPlantAnalysis = item.analysis_type === "plant";
+
+            // Conditional keys
+            const cropGroupMatch = !isPlantAnalysis || cropGroup === "" || item?.report_data?.leafCropGroup === cropGroup;
+            const cropTypeKey = isPlantAnalysis ? item?.report_data?.leafCrop : item?.report_data?.soilCrop;
+            const labTypeKey = isPlantAnalysis ? item?.report_data?.plantLabType : item?.report_data?.soilLabType;
+
+            return (
+                cropGroupMatch &&
+                (cropTypeKey === cropType || cropType === "") &&
+                (labTypeKey === labType || labType === "") &&
+                item?.report_data?.sample_paddock_farm_assignments.some(assignment =>
+                    assignment.farm === farm && assignment.paddock === paddock
+                )
+            );
+        });
+        
+        // Display the selected reports count
+        const selectedReportsCount = document.getElementById('selected-reports-count');
+        if (selectedReports.length === 0) {
+            selectedReportsCount.innerHTML = `Charts will be automatically generated when all dropdowns are selected and reports found.`;
+        } else if (selectedReports.length === 1) {
+            selectedReportsCount.innerHTML = `Only <strong>${selectedReports.length}</strong> report found.`;
+        } 
+        else {
+            selectedReportsCount.innerHTML = `<strong>${selectedReports.length}</strong> reports found.`;   
+        }
+
+        processSelectedReports(selectedReports);
+    }
+
+
+
+    /**
+     * Populates the dropdowns for with the user reports data to filter when report will 
+     * be selected for analysis.
+     * @param {list} data The list of reports objects.
+     * @return {null} Returns nothing
+    */
+    async function populateDropdownOptions(data){
+        let cropGroupTypes = [...new Set(data.map(item => item?.report_data?.leafCropGroup))];
+        let cropTypes = [...new Set(data.map(item => data[0].analysis_type == "plant" ? item?.report_data?.leafCrop : item?.report_data?.soilCrop))];
+        let uniqueLabTypes = [...new Set(data.map(item => data[0].analysis_type == "plant" ? item?.report_data?.plantLabType : item?.report_data?.soilLabType))];
+        let farmsData = await populateSamplePairingFarmsPaddocksTable(); // {"FarmName": ["Paddock1", "Paddock2"], ...}
+
+        // populate the dropdowns 
+        const cropGroupSelect = document.getElementById('cropGroup');
+        const cropTypeSelect = document.getElementById('cropType');
+        const labTypeSelect = document.getElementById('labType');
+        const farmsSelect = document.getElementById('userFarms');
+        const paddocksSelect = document.getElementById('userPaddocks');
+
+        if (data[0].analysis_type == 'plant'){
+            cropGroupTypes.forEach((item) => {
+                const option = document.createElement('option');
+                option.value = item;
+                option.textContent = item;
+                cropGroupSelect.appendChild(option);
+            });
+        }else {
+            document.getElementById('cropGroupForm').style.display = 'none';
+        }
+
+        cropTypes.forEach((item) => {
+            const option = document.createElement('option');
+            option.value = item;
+            option.textContent = item;
+            cropTypeSelect.appendChild(option);
+        });
+
+        uniqueLabTypes.forEach((item) => {
+            const option = document.createElement('option');
+            option.value = item;
+            option.textContent = item;
+            labTypeSelect.appendChild(option);
+        });
+
+        Object.keys(farmsData).forEach((farm) => {
+            const option = document.createElement('option');
+            option.value = farm;
+            option.textContent = farm;
+            farmsSelect.appendChild(option);
+        });
+
+        farmsSelect.addEventListener('change', function() {
+            const selectedFarm = this.value;
+            paddocksSelect.innerHTML = '<option selected disabled value="">Select a Paddock</option>'; // Reset paddocks select
+            if (farmsData[selectedFarm]) {
+                farmsData[selectedFarm].forEach((paddock) => {
+                    const option = document.createElement('option');
+                    option.value = paddock;
+                    option.textContent = paddock;
+                    paddocksSelect.appendChild(option);
+                });
+            }
+        });
+
+        // adding filterAndDisplayCharts function as an event listeners to all of the dropdowns
+        cropGroupSelect.addEventListener('change', filterAndDisplayCharts);
+        cropTypeSelect.addEventListener('change', filterAndDisplayCharts);
+        labTypeSelect.addEventListener('change', filterAndDisplayCharts);
+        farmsSelect.addEventListener('change', filterAndDisplayCharts);
+        paddocksSelect.addEventListener('change', filterAndDisplayCharts);
+    }
+
+    
+    /**
+     * Function to populate the sample pairing farms and paddocks table body.
+     * It fetches the list paddocks API connected to the user management platform.
+     * @return {null} Returns nothing
+     */
+    async function populateSamplePairingFarmsPaddocksTable() {
+        try {
+            const response = await fetch(urls.listPaddocks, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    token: getCookie("api_bearer") || getQueryParam('token')
+                })
+            });
+
+            const res = await response.json();
+
+            if (res.status === 'success') {
+                let farmsManagementData = {};
+
+                for (let i = 0; i < res.data1.length; i++) {
+                    const paddock = res.data1[i];
+                    const paddock__Name = paddock.PaddockName;
+                    const paddock__Farm_ID = paddock.Farm_ID;
+                    const farm__farmName = res.data.find(farm => farm.Farm_ID === paddock__Farm_ID)?.FarmName;
+
+                    if (!farm__farmName) continue;
+
+                    if (!farmsManagementData[farm__farmName]) {
+                        farmsManagementData[farm__farmName] = [];
+                    }
+
+                    farmsManagementData[farm__farmName].push(paddock__Name);
+                }
+
+                return farmsManagementData;
+            } else {
+                console.error('Error fetching data:', res);
+                return null;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            return null;
+        }
+    }
+
+    
+    async function getUserReports(page = 1, pageSize = 10) {
+        await fetch(urls.getUserReports, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                user_email: auth_user?.email,
+                user_id: auth_user?.id,
+                analysis_type: getQueryParam('type'),
+                user_role: getQueryParam('role'),
+                // page: page,
+                // page_size: pageSize,
+            })
+        })
+        .then(response => response.json())
+        .then(async data => {
+            if (data.reports && data.reports.length > 0) {
+                allReports = data.reports;
+
+                await populateDropdownOptions(data.reports);
+            }else {
+                console.log('No reports found');
+            }
+
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        // when the dashboard is loaded, set up the token in the cookies
+        // Check if the user is logged in using the token passed from the URL
+        const token = getQueryParam('token');
+        if (token) {setCookie('api_bearer', token, 365)}
+        
+        // Show loader to process user data and list reports
+        showLoader()
+
+        // Get the users details from the management application based on the token
+        // Get the list of farms and paddocks and place them into farmsManagementData placeholder
+        await fetch(urls.tokenToUser, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(
+                {
+                    "token": getCookie("api_bearer") || getQueryParam('token'),
+                    "role": getQueryParam('role')
+                }
+            )
+        })
+        .then(response => response.json())
+        .then(res => {
+            // Check if the response is successful
+            if (res.status === 'success') { 
+                auth_user = res?.user || {};
+                console.log(auth_user);
+            } else {
+                console.error('Error fetching data:', res);
+            }
+        }).then(async () => {
+            await getUserReports();
+        }).then(() => {
+            // Hide the loader after processing the data
+            hideLoader();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+
+        // plotNutrientBarChart(
+        //     data = [37.9, 47.1, 46.9, 41.1, 41.6, 38.4, 45],
+        //     categories = ['2025-03-10', '2025-03-12', '2025-03-14', '2025-03-16', '2025-03-18', '2025-03-19', 'Current'],
+        //     nutrient_name = "Sodium",
+        //     lower_range = 35,
+        //     upper_range = 48
+        // )
+
+    });
+
+    function plotNutrientBarChart(
+        data,
+        categories,
+        nutrient_name,
+        lower_range,
+        upper_range,
+        report_category,
+        current_score, 
+        current_deviation
+    ) {
+        let safeNutrientId = nutrient_name.replace(/\s+/g, '-').toLowerCase().replace(/\//g, '-');
+
+        // Plot for the last 5 data points
+        data = data.slice(-7);
+        categories = categories.slice(-7);
+
+        // Prepare yaxis range including only valid values
+        let yValues = [...data];
+        if (lower_range !== null) yValues.push(lower_range);
+        if (upper_range !== null) yValues.push(upper_range);
+
+        // Prepare annotations array
+        let annotationsY = [];
+        if (lower_range !== null) {
+            annotationsY.push({
+                y: lower_range,
+                borderColor: '#00E396',
+                label: {
+                    text: 'Lower Range',
+                    style: {
+                        color: "#fff",
+                        background: "#00E396"
+                    }
+                },
+                strokeDashArray: 4
+            });
+        }
+        if (upper_range !== null) {
+            annotationsY.push({
+                y: upper_range,
+                borderColor: '#00E396',
+                label: {
+                    text: 'Upper Range',
+                    style: {
+                        color: "#fff",
+                        background: "#00E396"
+                    }
+                },
+                strokeDashArray: 4
+            });
+        }
+
+        var options = {
+            chart: {
+                type: 'bar',
+                height: 450,
+                width: 450,
+                events: {
+                    mounted: (chart) => {
+                        chart.windowResizeHandler();
+                    }
+                }
+
+            },
+            series: [{
+                name: `${nutrient_name}`,
+                data: data
+            }],
+            xaxis: {
+                categories: categories,
+            },
+            dataLabels: {
+                enabled: true,
+                formatter: function (val) {
+                    return val;
+                },
+                offsetY: -20,
+                style: {
+                    fontSize: '12px',
+                    colors: ['#000']
+                }
+            },
+            colors: ['#2E93fA'],
+            stroke: {
+                show: true,
+                width: 1,
+                colors: ['#fff']
+            },
+            yaxis: {
+                min: 0,
+                max: () => {
+                    let max = Math.max(...yValues);
+                    return max === -Infinity ? 1 : Math.ceil(max + 1); // add buffer
+                },
+                tickAmount: 4
+            },
+            annotations: {
+                yaxis: annotationsY
+            },
+            legend: {
+                show: true,
+                position: 'bottom'
+            }
+        };
+
+        let categoryWrapper = document.getElementById(`chart-${report_category.replace(/\s+/g, '-').replace(/\//g, '-').toLowerCase()}`);
+        
+        let scoreColor = scoreColorCondition(current_score);
+        let deviationColor = colorCondition(current_deviation * 100);
+
+        let chartHeader = document.createElement('div');
+        chartHeader.className = "chart-box box-shadow-card";
+        chartHeader.innerHTML = `
+            <p>
+                <strong>${nutrient_name} Trend</strong>
+            </p>
+            <div id="chart-${report_category.replace(/\s+/g, '-').replace(/\//g, '-').toLowerCase()}-${safeNutrientId}"></div>
+            <div> 
+                <div class="d-flex align-items-center justify-content-between">
+                    <p ${current_score == 0 && current_deviation ==0 ? `style="color:#fff;"`:``}>Current Score:</p> 
+                    <p ${current_score == 0 && current_deviation ==0 ? `style="color:#fff;"`:`style="color: ${scoreColor}"`}>${current_score}</p>
+                </div>
+                <div class="d-flex align-items-center justify-content-between">
+                    <p ${current_score == 0 && current_deviation ==0 ? `style="color:#fff;"`:``}>Current Deviation:</p> 
+                    <p ${current_score == 0 && current_deviation ==0 ? `style="color:#fff;"`:`style="color: ${deviationColor}"`}>${current_deviation}%</p>
+                </div>
+            </div>
+            `;
+        categoryWrapper.appendChild(chartHeader);
+
+        var chart = new ApexCharts(document.querySelector(`#chart-${report_category.replace(/\s+/g, '-').replace(/\//g, '-').toLowerCase()}-${safeNutrientId}`), options);
+        chart.render();
+    }
+</script>
+{% endblock %}

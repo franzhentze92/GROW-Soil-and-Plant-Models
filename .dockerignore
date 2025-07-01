@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+ven/
+
+# Django local files
+db.sqlite3
+media/
+staticfiles/
+
+# OS files
+.DS_Store
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# IDE/editor
+*.swp
+*.swo
+*.idea/
+.vscode/ 

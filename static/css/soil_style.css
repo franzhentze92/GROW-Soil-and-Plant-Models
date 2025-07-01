@@ -1,0 +1,191 @@
+body {
+  font-family: "Arial", sans-serif;
+  font-size: 14px;
+  line-height: 1.42857143;
+  color: #333;
+  /* margin: 2rem; */
+}
+
+/* Table styles */
+th {
+  text-align: center;
+  text-transform: uppercase;
+  background-color: #f8f9fa;
+  /* font-size: 13px; */
+}
+
+.table-header {
+  background-color: #c0c0c0;
+  color: #000;
+  font-weight: bold;
+}
+
+.table-header th {
+  white-space: nowrap;
+  /* Prevent text wrapping */
+  width: auto;
+  /* Adjust width to fit content */
+  padding: 0 !important;
+}
+
+.table-header th:first-child,
+.table-header th:nth-child(2),
+.table-header th:nth-child(3) {
+  width: 16.6%;
+  /* 50% / 3 for the first 3 columns */
+}
+
+.table-header th:nth-child(4) {
+  width: 50%;
+  /* The remaining 50% for the fourth column */
+}
+
+/* .table-bordered>:not(caption)>*>*{
+border: 3px solid #000;
+padding: 0 0.5rem;
+} */
+
+.table-bordered > tbody > tr > td,
+.table-bordered > thead > tr > th {
+  padding: 0 0.5rem;
+  height: fit-content;
+  font-size: 13px;
+}
+
+.table-bordered > tbody {
+  font-size: 14px;
+}
+
+.table-bordered > thead,
+.table-bordered > tbody,
+.table-bordered > tfoot {
+  /* 
+.table-bordered > tbody > tr */
+  border: 2px solid #000;
+}
+
+.table-bordered .bar-col {
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+}
+
+.bar {
+  background-color: green;
+  position: absolute;
+  /* right: 0; */
+  left: 101%;
+  /*100% is 16.6% of all table width*/
+  /* 130% is 1 col of the righ col */
+  /* add the value inside the calc to automatically set the width */
+  width: calc(1 * 101%);
+  max-width: calc(3 * 99%);
+  padding: 0;
+  height: 10px;
+  font-weight: bold;
+}
+
+.td-bar {
+  position: relative;
+  /* display: flex; */
+  /* align-items: center; */
+  /* border-top: 0 !important;
+border-right: 0 !important;
+border-left: 0 !important; */
+  height: 20px;
+}
+
+.parenthetical-text {
+  font-size: 10px;
+  font-weight: 100;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.table-footer {
+  font-size: 12px;
+}
+
+.table-footer th {
+  padding: 0 !important;
+  text-transform: none;
+}
+
+/* Document header details */
+.document-header-details .field-wrapper {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  width: 90%;
+}
+
+.document-header-details .field-wrapper .field-name {
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.document-header-details .field-wrapper .field-address {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.document-header-details .logo img {
+  width: 100px;
+}
+
+.document-header-details {
+  font-size: 13px;
+}
+
+@page {
+  size: A4;
+  margin: 0;
+  box-shadow: initial;
+  -webkit-print-color-adjust: exact;
+}
+
+@media print {
+  html,
+  body {
+    width: initial;
+    height: initial;
+    margin: 0;
+    margin-top: 20px;
+    padding: 0;
+    overflow: hidden;
+    -webkit-print-color-adjust: exact;
+    -webkit-box-shadow: initial;
+    box-shadow: initial;
+  }
+}
+.border-bottom-none
+{
+  border-width: 0px !important;
+  box-shadow: none !important;
+}
+.border-width
+{
+  border-width: 1px !important;
+}
+.select-field
+{
+  font-size: 12px;
+}
+.table-header th
+{
+  font-size: 12px !important;
+}
+.table > tbody > tr > td
+{
+  font-size: 12px !important;
+}
+
+.watermark {
+  background-image: url(/static/images/watermark_60.png);
+  background-size: 200px;
+  background-repeat: no-repeat;
+  background-position: center;
+}

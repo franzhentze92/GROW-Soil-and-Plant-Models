@@ -1,0 +1,17 @@
+<div class="message-card">
+    {% if error %}
+        <div class="alert alert-danger" role="alert">
+            <strong>Error:</strong> {{ error }}
+        </div>
+    {% endif %}
+    {% if success %}
+        <div class="alert alert-success" role="alert">
+            <strong>Success:</strong> {{ success }}
+        </div>
+    {% endif %}
+    {% if message %}
+        <div class="alert alert-info" role="alert">
+            <strong>Info:</strong> {{ message }}
+        </div>
+    {% endif %}
+</div>

@@ -1,0 +1,1360 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block heading %}
+{% endblock %}
+
+{% block content %}
+    <style>
+        .table-header {
+            background-color: #c0c0c0 !important;
+            background: #c0c0c0 !important;
+            font-weight: bold;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            box-shadow: inset 0 0 0 1000px gray !important;
+
+        }
+
+        .table-header {
+            background-color: #c0c0c0 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        
+        .table-header th {
+            background-color: #c0c0c0 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+    </style>
+    <div class="loader-overlay" id="loader">
+        <div class="loader"></div>
+    </div>
+    <div class="page-padding container-fluid">
+        <div class="row">
+            <div class="col-md-5 col-sm-12">
+                <div class="dashboard-card ">
+                    <h3 class="mb-2 auth-heading"><span>Soil Therapy Analysis Submission</span></h3>
+                        <p class="auth-text mb-0">View previously submitted soil therapy analysis reports.</p>
+                </div>
+                <div class="dashboard-card">
+                    <div id="nutritionTabsContent">
+                        <!-- Soil Therapy Tab -->
+                        <div class="tab-pane fade show active" id="soil-content" role="tabpanel">
+                            <div>
+                                <form id="inputForm" class="needs-validation" action="{% url 'soil_analysis' %}" method="post"
+                                    enctype="multipart/form-data" novalidate>
+                                    <div class="form-grid">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <div class="form-floating">
+                                                        <input type="text" id="soilCrop"  class="form-control" value="" readonly>
+                                                        <label for="soilCrop" class="form-label">Select Crop:</label>
+                                                        <div class="invalid-feedback">
+                                                            Please select a crop.
+                                                          </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <div class="form-floating">
+                                                        <input type="text" id="soilLabType"  class="form-control" value="" readonly>
+                                                        <label for="soilLabType" class="form-label">Lab Type:</label>
+                                                        <div class="invalid-feedback">
+                                                            Please select a lab type.
+                                                          </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div style="text-align: right !important;">
+                                        <!-- onclick="showLoader()" -->
+                                        <button type="submit" class="btn submit-btn px-4" disabled>
+                                            Submitted
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-card" id="sampleAssignmentContent">
+                    <p>Matched samples to farms and paddocks summary</p>
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>Sample</th>
+                            <th>Farm</th>
+                            <th>Paddock</th>
+                        </tr>
+                        </thead>
+                        <tbody id="sample-assignment-tbody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mb-2" id="pdf-decription-dashboard">
+                    <div class="dashboard-card mb-2">
+                        <div class="form-floating">
+                            <select class="form-select" id="paddockDataSelect" >
+                                <option value="" disabled selected>Please select the table.</option>
+                            </select>
+                            <label for="form-select" class="form-label">Select the paddock to export:</label>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card mb-2">
+                        <p class="m-0">Nutrients Explanation Summary </p>
+                        <div id="recommendationFormResponse" class="mt-2">
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="row d-flex align-items-center justify-content-between mb-3">
+                            <span class="col-md-8 col-sm-12">
+                                <p class="m-0">Download the selected paddock only.</p>
+                            </span>
+                            <span class="col-md-4 col-sm-12">
+                                <button class="btn submit-btn px-4 w-100" onclick="downloadPDF()">Download PDF</button>
+                            </span>
+                        </div>
+
+                        <div class="row d-flex align-items-center justify-content-between mb-3">
+                            <span class="col-md-8 col-sm-12 d-flex align-items-center">
+                                <label for="switch" style="width: 80%;">Include nutrients explanation for all paddocks in the report.</label>
+                                <label class="switch">
+                                    <input type="checkbox">
+                                    <span class="slider round"></span>
+                                </label>
+                            </span>
+                            <span class="col-md-4 col-sm-12">
+                                <button class="btn submit-btn px-4 w-100" onclick="downloadAllPDF()">Export All</button>
+                            </span>                            
+                        </div>
+
+                        <p style="font-weight: 100; font-style: italic; margin: 0;">Note: PDF files can be found directly in the selected downloading folder upon download/printing.</p>    
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7 col-sm-12 pdf-viewer" id="pdf-viewer">
+                <p class="fw-bold">This section will display the tables generated for all of the paddocks of the uploaded files. The tables displayed here will automatically be re-formatted to match the PDF template when exporting.</p>
+                <p class="fw-bold">To start, please upload your files on the left panel, and then select which paddock to export.</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'js/custom.js' %}"></script>
+<script src="{% static 'js/soil-therapy.js' %}"></script>
+
+<script>
+    const urls = {
+        generateRecommendations: "{% url 'generate_soil_recommendations' %}",
+        listPaddocks: "{% url 'list_paddocks' %}",
+    };
+
+    
+    /**
+     * Generates the user details display section in the pdf display section based on the extracted data from the CSV files.
+     * @param {dict} data The report object containing the processed user/lab data.
+     * @param {string} paddock The current paddock object name to be included in the returned tag, used when exporting to insert the paddock name for every table.
+     * @return {string} Returns a string containing the HTML tag to be inserted into the DOM.
+     */
+    function generateUserDetails(data, paddock=null, logo=false, disabled = false){
+        let userData = data.user;
+        // <input class="text-align-right user-details-header" type="text" id="userData__address" name="userData__address" value="${userData.address}" onkeyup="updateUserDetailsHeader(this)">
+
+        return `
+        <div class="row">
+            <div class="document-header-details ${logo ? 'col-md-5 col-sm-12' : 'col-md-6 col-sm-12'}">
+                <div class="field-wrapper">
+                    <label class="field-name" for="userData__date">Date:</label>
+                    <input class="text-align-right user-details-header" type="date" id="userData__date" name="userData__date" value="${userData.date}" oninput="updateUserDetailsHeader(this)" ${disabled ? 'disabled' : ''}>
+                </div>
+                <div class="field-wrapper">
+                    <label class="field-name" for="userData__name">Name:</label>
+                    <input class="text-align-right user-details-header" type="text" id="userData__name" name="userData__name" value="${userData.name}" onkeyup="updateUserDetailsHeader(this)" ${disabled ? 'disabled' : ''}>
+                </div>
+                <div class="field-wrapper">
+                    <label class="field-name" for="userData_address">Address:</label>
+
+                        <textarea class="text-align-right user-details-header" id="userData__address" type="text" name="userData__address" onkeyup="updateUserDetailsHeader(this)" rows="3" cols="50" maxlength="200" ${disabled ? 'disabled' : ''}>
+                            ${userData.address}
+                        </textarea>
+                        <span class="d-none text-align-right user-details-header" id="userData__address_span">${userData.address}</span>
+                </div>
+            </div>
+            <div class="document-header-details ${logo ? 'col-md-7 col-sm-12' : 'col-md-6 col-sm-12'} ${logo ? 'd-flex align-items-center justify-content-between':''} ">
+                <div class="d-flex align-items-start justify-content-between flex-column" style="${logo ? 'width: 80% !important;' : 'width: 100% !important;'}">
+                    <div class="field-wrapper">
+                        <label class="field-name" for="userData__land">Land Use:</label>
+                        <input class="text-align-right user-details-header" type="text" id="userData__land" name="userData__land" value="${userData.land}" onkeyup="updateUserDetailsHeader(this)" ${disabled ? 'disabled' : ''}>
+                    </div>
+                    ${paddock != null ? `
+                        <div class="field-wrapper">
+                            <span class="field-name">PADDOCK:</span>
+                            <input class="text-align-right user-details-header" type="text" value="${paddock}" ${disabled ? 'disabled' : ''}>
+                        </div>
+                        `:``}
+                    <div class="field-wrapper">
+                        <label class="field-name" for="userData__sample_rec">Sample Rec:</label>
+                        <input class="text-align-right user-details-header" type="date" id="userData__sample_rec" name="userData__sample_rec" value="${userData.sample_rec}" oninput="updateUserDetailsHeader(this)" ${disabled ? 'disabled' : ''}>
+                    </div>
+                    <div class="field-wrapper">
+                        <label class="field-name" for="userData__email">Email:</label>
+                        <input class="text-align-right user-details-header" type="text" id="userData__email" name="userData__email" value="${userData.email}" onkeyup="updateUserDetailsHeader(this)" ${disabled ? 'disabled' : ''}>
+                    </div>
+                </div>
+
+                ${logo ? `
+                    <div>
+                        <img src="{% static 'images/NTS Logo.webp' %}" alt="" style="width: 100px">
+                    </div>
+                ` : ``}
+            </div>
+        </div>
+        `
+    }
+
+    /**
+     * Downloads all the paddocks in a single PDF file.
+     * @return {null} Returns nothing
+     */
+    async function downloadAllPDF() {
+        let allPDFPages = `<div class="pdf-container">`; // Initialize an empty string to store the HTML for all paddocks
+        let paddocksWithTables = Object.entries(report.paddocks).filter(([key, paddock]) => paddock.hasOwnProperty('table')); // we don't select any specific paddock to export all
+
+        // Iterating through all of the paddocks
+        // dev ~ use .slice(0, 1) for working on only first paddock data
+        // paddocksWithTables.forEach(async ([key, paddock], index) => {
+        for (let index = 0; index < paddocksWithTables.length; index++) {
+            const [key, paddock] = paddocksWithTables[index];
+
+            let parser = new DOMParser();
+            let doc1 = parser.parseFromString(paddock.table, "text/html");
+            let doc2 = parser.parseFromString(paddock.base_saturation_lower_table, "text/html");
+            // Safely parse doc3 only if it's a non-empty string
+            let doc3 = paddock.tae_table && paddock.tae_table.trim()
+                ? parser.parseFromString(paddock.tae_table, "text/html")
+                : null;
+
+            let table1 = doc1.querySelector("table") || "<table></table>"; // Get the first table from element1
+            let table3 = doc3 ? doc3.querySelector("table") : document.createElement("table");
+
+            let table1Rows = table1.querySelectorAll("#element-table-body tr"); // Main table rows + base saturation
+            let table1LamotteRows = table1.querySelectorAll("#lamotte-table-body tr"); // Lamotte table rows                
+            let table3TaeRows = doc3 ? table3.querySelectorAll("#element-table-body tr") : []; // Only query table3 rows if doc3 is valid
+
+            let allFormatedExplanation = [];
+
+            // Get the explanation for every paddock if the checkbox is selected to include it
+            // report['include_nutrients_explanation']
+            if (document.querySelector('.switch input[type="checkbox"]')?.checked){
+                // event.preventDefault(); // Prevent form submission - function must receive an event
+
+                let formData = new FormData();
+                formData.append("crop_group", report['soilCrop']);
+
+                // Data placeholder
+                let dataToRecommend = {
+                        "deficient": [],
+                        "optimal": [],
+                        "excess": []
+                    };
+
+                // Main first table rows + base saturation
+                table1Rows.forEach(row => {
+                    let bar = row.querySelector('.bar');
+                    if (bar) {
+                        let bgColor = bar.style.background.toLowerCase(); // Normalize case
+                        let firstCell = row.querySelector("td");
+                        let value = firstCell.textContent.trim().split(' (')[0];
+                        let category = row.id.replace('_', ' ');
+
+                        if(value == "Organic Matter"){
+                            category = "Organic Matter";
+                        } else if (value == "pH-level"){
+                            category = "Soil pH";
+                        } 
+                    
+                        // else if ([""].includes(value)){
+                        //     // Note that we need to search in the TAE table not to get the wrong category
+                        //     category = "TAE";
+                        // }
+
+                        // Including the rows where the nutrients are extremely low
+                        if ((bgColor === "red") || (bar.innerHTML == "Extremely Low")){
+                            dataToRecommend.deficient.push({"category": category, "value": value}); 
+                        } 
+
+                        if (bgColor == "rgb(51, 153, 102)") {
+                            dataToRecommend.optimal.push({"category": category, "value": value});
+                        }
+
+                        if (bgColor === "rgb(0, 255, 255)") {
+                            dataToRecommend.excess.push({"category": category, "value": value});
+                        }
+
+                    } else {
+                        let firstCell = row.querySelector("td");
+                        let firstCellValue = firstCell.textContent.trim().split(' (')[0];
+
+                        if(firstCellValue == "CEC"){
+                            category = "CEC";
+
+                            let secondCell = row.querySelectorAll("td")[1];
+                            let secondCellValue = extractAndJoinNumbers(secondCell.textContent.trim());
+            
+                            if (secondCellValue < 20){ // <= 5
+                                dataToRecommend.deficient.push({"category": category, "value": firstCellValue});
+                            } else if (secondCellValue >= 20 && secondCellValue <= 30){
+                                dataToRecommend.optimal.push({"category": category, "value": firstCellValue});
+                            }
+                            else if (secondCellValue > 30){
+                                dataToRecommend.excess.push({"category": category, "value": firstCellValue});
+                            }
+                        }
+                    }
+                });
+
+                table1LamotteRows.forEach(row => {
+                    let bar = row.querySelector('.bar');
+                    if (bar) {
+                        let bgColor = bar.style.background.toLowerCase(); // Normalize case
+                        let firstCell = row.querySelector("td");
+                        let value = firstCell.textContent.trim().split(' (')[0];
+                        let category = "Lamotte Reams"; // won't change for Lamotte Reams
+
+                        // Including the rows where the nutrients are extremely low
+                        if ((bgColor === "red") || (bar.innerHTML == "Extremely Low")){
+                            dataToRecommend.deficient.push({"category": category, "value": value}); 
+                        } 
+
+                        if (bgColor == "rgb(51, 153, 102)") {
+                            dataToRecommend.optimal.push({"category": category, "value": value});
+                        }
+
+                        if (bgColor === "rgb(0, 255, 255)") {
+                            dataToRecommend.excess.push({"category": category, "value": value});
+                        }
+                    }
+                });
+
+                table3TaeRows.forEach(row => {
+                    let bar = row.querySelector('.bar');
+                    if (bar) {
+                        let bgColor = bar.style.background.toLowerCase(); // Normalize case
+                        let firstCell = row.querySelector("td");
+                        let value = firstCell.textContent.trim().split(' (')[0];
+                        let category = "TAE"; // won't change for TAE
+
+                        // Including the rows where the nutrients are extremely low
+                        if ((bgColor === "red") || (bar.innerHTML == "Extremely Low")){
+                            dataToRecommend.deficient.push({"category": category, "value": value}); 
+                        } 
+
+                        if (bgColor == "rgb(51, 153, 102)") {
+                            dataToRecommend.optimal.push({"category": category, "value": value});
+                        }
+
+                        if (bgColor === "rgb(0, 255, 255)") {
+                            dataToRecommend.excess.push({"category": category, "value": value});
+                        }
+                    }
+                });
+
+                formData.append("nutrient_deficient", JSON.stringify(dataToRecommend.deficient));
+                formData.append("nutrient_excess", JSON.stringify(dataToRecommend.excess));
+                formData.append("nutrient_optimal", JSON.stringify(dataToRecommend.optimal));
+
+                // To handle async processing of the promise
+                const response = await fetch(urls.generateRecommendations, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                report['paddocks'][key]["recommendations"]["explanation"] = data?.combined_nutrients_explanation || ""
+                report['paddocks'][key]["recommendations"]["form_data"] = {
+                    "crop_group": report['soilCrop'],
+                    // "application_method": formData.get("application_method"),
+                    // "recommendation_type": formData.get("recommendation_type"),
+                    "nutrient_deficient": dataToRecommend.deficient,
+                    "nutrient_excess": dataToRecommend.excess,
+                    "nutrient_optimal": dataToRecommend.optimal
+                }
+
+                // Re-ordering the explanation object here to avoid re-ordering in the paddock change event
+                const explanationOrder = [
+                    "Organic Matter",
+                    "CEC",
+                    "Soil pH",
+                    "Base Saturation",
+                    "Available Nutrients",
+                    "Lamotte Reams",
+                    "TAE",
+                ];
+
+                // Create a new object in the desired order
+                const reorderedExplanation = {};
+
+                // First, add keys in explanationOrder if they exist
+                explanationOrder.forEach((innerkey) => {
+                    if (report['paddocks'][key]["recommendations"]["explanation"].hasOwnProperty(innerkey)) {
+                        reorderedExplanation[innerkey] = report['paddocks'][key]["recommendations"]["explanation"][innerkey];
+                    }
+                });
+
+                // Optional: Add any remaining keys that weren't specified in the explanationOrder
+                Object.keys(report['paddocks'][key]["recommendations"]["explanation"]).forEach((innerkey) => {
+                    if (!reorderedExplanation.hasOwnProperty(innerkey)) {
+                        reorderedExplanation[innerkey] = report['paddocks'][key]["recommendations"]["explanation"][innerkey];
+                    }
+                });
+
+                // Update the explanation object in report['paddocks'][selectedPaddock]
+                report['paddocks'][key]["recommendations"]["explanation"] = reorderedExplanation;
+
+                // Get the explanation object
+                let explanationObj = report['paddocks'][key]["recommendations"]["explanation"];
+                let formattedExplanation = "";
+                allFormatedExplanation = [];
+                let count = 1;
+
+                // Iterate through each key-value pair in the explanation object
+                for (const [key, value] of Object.entries(explanationObj)) {
+                    formattedExplanation += `<p class="m-0" style="text-align: justify;">${count}. <b>${key}:</b> ${value}<br></p>`;
+                    count++;
+
+                    if (count == 4) {
+                        // push the first three explanations to the array
+                        allFormatedExplanation.push(formattedExplanation);
+                        formattedExplanation = ""; // Reset for the next explanation
+                    }
+                }
+                if (count < 4){
+                    // count didn't reach 4, so it wasn't pushed to the array in the previous loop
+                    // we have to push it here
+                    allFormatedExplanation.push(formattedExplanation);
+                    
+                }else if (formattedExplanation && (count > 4)) {
+                    // push the remaining explanations to the array
+                    // this is to avoid broken paragraphs in the PDF with half-hidden rows (first and last rows of the pages)
+                    allFormatedExplanation.push(formattedExplanation);
+                }                    
+            }
+
+            let pdfPage = `
+                <div class="m-5">
+                    <div class="container mt-4">
+                        ${generateUserDetails(report, key, logo=true, disabled=true)}
+                    </div>
+                    <div class="container mt-4" id="soilAnalysisContainer">
+                        <div class="row">
+                            <div class="col-12">
+                                ${table1.outerHTML}
+                            </div>
+                        </div>
+                    </div>
+                    ${paddock?.tae_table || paddock?.nutrient_ratios_table || (paddock?.recommendations?.explanation && document.querySelector('.switch input[type="checkbox"]')?.checked) ? `
+                        <div class="page-break"></div>
+                        <div class="container mt-4">
+                            ${generateUserDetails(report, key, logo=true, disabled=true)}
+                        </div> 
+                    `: ""}
+                    ${paddock?.tae_table ? `
+                        <div class="container mt-4" id="soilAnalysisContainer">
+                            <div class="row">
+                                <div class="col-12">
+                                    ${paddock.tae_table}
+                                </div>
+                            </div>
+                        </div>
+                    ` : ""}
+                    ${paddock?.nutrient_ratios_table ? `
+                        <div class="container mt-4" id="soilAnalysisContainer">
+                            <div class="row">
+                                <div class="col-12">
+                                    ${paddock.nutrient_ratios_table}
+                                </div>
+                            </div>
+                        </div>
+                    ` : ""}
+                    ${paddock?.recommendations?.explanation && document.querySelector('.switch input[type="checkbox"]')?.checked? `
+                        <div class="container mt-4">
+                            <div class="row">
+                                <div class="col-12 text-justify">
+                                    <h4 class="fw-b"><b>Nutrient Explanation:</b></h4>
+                                    ${allFormatedExplanation[0] || ""}
+                                </div>
+                            </div>
+                        </div>
+                        ${allFormatedExplanation.length > 1 ? `
+                            <div class="page-break"></div>
+                            <div class="container mt-4">
+                                ${generateUserDetails(report, key, logo=true, disabled=true)}
+                            </div>
+                            <div class="container mt-4">
+                                <div class="row">
+                                    <div class="col-12 text-justify">
+                                        ${allFormatedExplanation[1] || ""}
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    ` : ''}
+                </div>
+                <!-- <div class="page-break m-0 p-0"></div> -->
+                `;
+                // ${report?.description ? `
+                //     <div class="container table-notes mt-4">
+                //         <div class="row">
+                //             <div class="col-12">
+                //                 <h4 class="fw-b">Notes:</h4>
+                //                 <p class="text-justify">${report?.description}</p>
+                //             </div>
+                //         </div>
+                //     </div>
+                // ` : ""}
+
+                if (index !== paddocksWithTables.length - 1) {
+                    pdfPage += `
+                    <div class="page-break m-0 p-0"></div>
+                    `
+                }
+
+            allPDFPages += pdfPage;
+
+        };
+
+        allPDFPages += `</div>`;
+
+        // Create the main window
+        const html_template = `
+        <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>${report['title']}</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" id="bootstapCSS">
+                <link rel="stylesheet" href="{% static 'css/table.css' %}" id="tableCSS">
+            </head>
+            <body class="pdf-container">
+                <style>
+                    .table-header {
+                        background-color: #c0c0c0 !important;
+                        background: #c0c0c0 !important;
+                        font-weight: bold;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                        box-shadow: inset 0 0 0 1000px gray !important;
+
+                    }
+
+                    .table-header {
+                        background-color: #c0c0c0 !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                    
+                    .table-header th {
+                        background-color: #c0c0c0 !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                    
+                    .page-break{
+                        height: 0;
+                        page-break-before: always;
+                    }
+
+                    table {
+                        width: 100% !important;
+                        /* border-collapse: collapse !important; */
+                        border-collapse: separate !important;
+                        border-spacing: 0;
+
+                    }
+                    
+                    table tbody {
+                        border: 1px solid #1b1c1d !important;
+                    }
+
+                    table tr, table td, table th, table tbody {
+                        border: none !important;
+                        background: transparent !important;
+                        box-shadow: none !important;
+                        outline: none !important;
+
+                        padding: 1px 2px !important;
+                        font-size: 10px !important;
+                    }
+
+                    .table-header th:first-child,
+                    .table-header th:nth-child(2),
+                    .table-header th:nth-child(3),
+                    .table-header th:nth-child(4),
+                    .table-header th:nth-child(5),
+                    .table-header th:nth-child(6) {
+                        border-bottom: 2px solid #1b1c1d !important;
+                        border-right: 2px solid #1b1c1d !important;
+                        border-top: 2px solid #1b1c1d !important;
+                        boder-left: none !important;
+                    }
+
+                    .table-header th:nth-child(6) {
+                        border-left: 2px solid #1b1c1d !important;
+                    }
+
+                    tbody td:nth-child(1), tbody td:nth-child(2), tbody td:nth-child(3) {
+                        border: 1px solid #1b1c1d !important;
+                    }
+
+
+                    tbody td:nth-child(4), tbody td:nth-child(5), tbody td:nth-child(6) {
+                        border-top: none !important;
+                        border-bottom: none !important;
+                        border-left: 1px solid #1b1c1d !important;
+                        border-right: 1px solid #1b1c1d !important;
+                    }
+
+                    table tr:first-child td:nth-child(4),
+                    table tr:first-child td:nth-child(5),
+                    table tr:first-child td:nth-child(6) {
+                        border-top: 1px solid #1b1c1d !important;
+                    }
+
+                    table {
+                        border: 2px solid #1b1c1d !important;
+                    }
+
+                    table tr:last-child td:nth-child(4),
+                    table tr:last-child td:nth-child(5),
+                    table tr:last-child td:nth-child(6) {
+                        border-bottom: 1px solid #1b1c1d !important;
+                    }
+
+                    tr.base-saturations-header td:nth-child(1){
+                        border-bottom: none !important;
+                        border-top: none !important;
+                    }
+
+                    tr.base-saturations-header td:nth-child(2),
+                    tr.base-saturations-header td:nth-child(3),
+                    tr.base-saturations-header td:nth-child(4){
+                        border-top: none !important;
+                        border-bottom: none !important;
+                        border-left: 1px solid #1b1c1d !important;
+                        border-right: 1px solid #1b1c1d !important;
+                    }
+                    
+                    #userData__address_span{
+                        display: block !important;
+                        white-space: pre-wrap;
+                        height: max-content !important;
+                        font-size: 10px !important;
+                        font-family: 'Arial', sans-serif;
+                        font-weight: normal !important;
+                        color: #000 !important;
+                    }
+
+                    input, textarea, #userData__address_span {
+                        border: none !important;
+                        padding: 0 !important;
+                        font-size: 10px !important;
+                    }
+
+                    label {
+                        width: 90px !important;
+                    }
+                    
+                    textarea#userData__address {
+                        display: none !important;
+                    }
+
+                    .document-header-details .field-wrapper .field-name{
+                        width: 100px;
+                    }
+
+                    .document-header-details .field-wrapper{
+                        justify-content: space-between;
+                    }
+
+                    .user-details-header{
+                        width: 60%;
+                    }
+
+                    .document-header-details .field-wrapper{
+                        width: 90%;
+                    }
+
+                    .table-bordered > tbody > tr > td, .table-bordered > thead > tr > th {
+                        padding: 0px 2px !important;
+                    }
+
+                    .table-bordered > thead > tr > th, .table-bordered > tbody, .table-bordered > tfoot {
+                        border: 2px solid #000 !important;
+                    }
+                    
+                    .bar {
+                        left: 104% !important;
+                    }
+
+                </style>
+                ${allPDFPages}
+            </body>
+            </html>
+        `;
+
+        // Create a new div to hold the HTML content that will be converted to PDF
+        // const pdfContent = document.createElement('div');
+        // pdfContent.innerHTML = html_template;
+
+        // // Convert HTML to PDF using html2pdf.js
+        // html2pdf()
+        //     .from(pdfContent)
+        //     .set({
+        //         margin:       10,
+        //         filename:     'Soil_Analysis_Report.pdf',
+        //         html2canvas:  { scale: 2 },
+        //         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        //         pagebreak: { mode: ['css', 'legacy'] }
+        //     })
+        //     .toPdf()
+        //     .get('pdf')
+        //     .then(function(pdf) {
+        //         // Open the PDF in a new tab
+        //         const pdfUrl = pdf.output('bloburl');
+        //         const newTab = window.open(pdfUrl, '_blank');
+        //         if (newTab) {
+        //             newTab.focus();
+        //         } else {
+        //             alert("Please allow popups for this site.");
+        //         }
+        //     })
+        //     .save();
+
+        // Wokring --
+        // Create an iframe for printing
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        iframeDoc.open();
+        iframeDoc.write(html_template);
+        // iframeDoc.title = report['title'];  // Set the title for the PDF filename
+        iframeDoc.close();
+
+        iframe.onload = () => {
+            iframe.contentWindow.focus(); // Make sure the iframe is focused for printing
+            iframe.contentWindow.print();
+            setTimeout(() => {
+                document.body.removeChild(iframe);
+            }, 300);
+        };
+        // ---
+
+        console.log(report)
+    }
+
+    /**
+    * Downloads the PDF file with the generated HTML.
+    * @return {null} Returns nothing
+    */
+    function downloadPDF() {
+        let allPDFPages = `
+        <div class="pdf-container">
+            `; // Initialize an empty string to store the HTML for all paddocks
+        const selectedPaddock = getSelectedPaddock();
+        const paddocksWithTables = Object.entries(report.paddocks).filter(([key, paddock]) => paddock.hasOwnProperty('table') && key == selectedPaddock);
+        
+        // add the previously obtained recommendation to to the HTML
+        // let recommendedProductsDeficientTag = '';
+        
+        // if (report['paddocks'][selectedPaddock]?.recommendations?.form_data?.nutrient_deficient?.length > 0) {
+        //     Object.keys(report['paddocks'][selectedPaddock]?.recommendations?.recommended_products?.deficient || {}).forEach(key => {
+        //         let product = report['paddocks'][selectedPaddock]["recommendations"]["recommended_products"]['deficient'][key];                        
+        //         recommendedProductsDeficientTag += `<li><b>${product.nutrient}</b>: ${product.recommended_products.join(', ')}</li>`;
+        //     });
+        // }
+
+        // Get the explanation object
+        let explanationObj = report['paddocks'][selectedPaddock]["recommendations"]["explanation"];
+        let formattedExplanation = "";
+        let allFormatedExplanation = [];
+        let count = 1;
+
+        // Iterate through each key-value pair in the explanation object
+        for (const [key, value] of Object.entries(explanationObj)) {
+            formattedExplanation += `<p class="m-0" style="text-align: justify;">${count}. <b>${key}:</b> ${value}<br></p>`;
+            count++;
+
+            if (count == 4) {
+                // push the first three explanations to the array
+                allFormatedExplanation.push(formattedExplanation);
+                formattedExplanation = ""; // Reset for the next explanation
+            }
+        }
+        if (count < 4){
+            // count didn't reach 4, so it wasn't pushed to the array in the previous loop
+            // we have to push it here
+            allFormatedExplanation.push(formattedExplanation);
+            
+        }else if (formattedExplanation && (count > 4)) {
+            // push the remaining explanations to the array
+            // this is to avoid broken paragraphs in the PDF with half-hidden rows (first and last rows of the pages)
+            allFormatedExplanation.push(formattedExplanation);
+        }
+
+        paddocksWithTables.forEach(([key, paddock], index) => {
+            // Process the tables since we will need to split them
+            let parser = new DOMParser();
+            let doc1 = parser.parseFromString(paddock.table, "text/html");
+            let doc2 = parser.parseFromString(paddock.base_saturation_lower_table, "text/html");
+
+            let table1 = doc1.querySelector("table"); // Get the first table from element1
+            // let table2 = doc2.querySelector("table"); // Get the first table from element2
+            
+            // let tbody1 = table1.querySelector("tbody"); // Extract the <tbody> from element1
+            // let tbody2s = table2.querySelectorAll("tbody"); // Extract all <tbody> from element2
+            
+            // tbody2s.forEach(tbody2 => {
+            //     tbody2.querySelectorAll("tr").forEach(row2 => {
+            //         table1.querySelectorAll("tr").forEach(row1 => {
+            //             if (row1.isEqualNode(row2)) {
+            //                 row1.remove(); // Remove the row from tbody1
+            //             }
+            //         });
+            //     });
+            // });
+
+            // Remove the llamotte section header from the first table
+            // table1.querySelector('#lamotte-table-header').remove();
+
+            // Replace the initial table body with the processed one
+            // let initialTbody = table1.querySelector("tbody"); // Find the existing tbody in table1
+            // initialTbody.replaceWith(tbody1); // Replace the old tbody with the updated tbody1
+            
+            let pdfPage = `
+                <div class="m-3">
+                    <div class="container mt-4">
+                        ${generateUserDetails(report, key, logo=true, disabled=true)}
+                    </div>
+                    <div class="container mt-4" id="soilAnalysisContainer">
+                        <div class="row">
+                            <div class="col-12">
+                                ${table1.outerHTML}
+                            </div>
+                        </div>
+                    </div>
+                    ${paddock?.tae_table || paddock?.nutrient_ratios_table || (paddock?.recommendations?.explanation && document.querySelector('.switch input[type="checkbox"]')?.checked) ? `
+                        <div class="page-break"></div>
+                        <div class="container mt-4">
+                            ${generateUserDetails(report, key, logo=true, disabled=true)}
+                        </div> 
+                    `: ""}
+                    ${paddock?.tae_table ? `
+                        <div class="container mt-4" id="soilAnalysisContainer">
+                            <div class="row">
+                                <div class="col-12">
+                                    ${paddock.tae_table}
+                                </div>
+                            </div>
+                        </div>
+                    ` : ""}
+                    ${paddock?.nutrient_ratios_table ? `
+                        <div class="container mt-4" id="soilAnalysisContainer">
+                            <div class="row">
+                                <div class="col-12">
+                                    ${paddock.nutrient_ratios_table}
+                                </div>
+                            </div>
+                        </div>
+                    ` : ""}
+                    ${paddock?.recommendations?.explanation? `
+                        ${!(paddock?.tae_table || paddock?.nutrient_ratios_table || (paddock?.recommendations?.explanation && document.querySelector('.switch input[type="checkbox"]')?.checked))? 
+                            `
+                            <div class="page-break"></div>
+                            <div class="container mt-4">
+                                ${generateUserDetails(report, key, logo=true, disabled=true)}
+                            </div> 
+                        ` : ""} 
+                        <div class="container mt-4">
+                            <div class="row">
+                                <div class="col-12 text-justify">
+                                    <h4 class="fw-b"><b>Nutrient Explanation:</b></h4>
+                                    ${allFormatedExplanation[0]}
+                                </div>
+                            </div>
+                        </div>
+                        ${allFormatedExplanation.length > 1 ? `
+                            <div class="page-break"></div>
+                            <div class="container mt-4">
+                                ${generateUserDetails(report, key, logo=true, disabled=true)}
+                            </div>
+                            <div class="container mt-4">
+                                <div class="row">
+                                    <div class="col-12 text-justify">
+                                        ${allFormatedExplanation[1]}
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    ` : ''}
+                </div>
+                `;
+
+                // Removed the following code from the pdfPage, it was before the recommendation explanation section
+                /*
+                <div class="page-break"></div>
+                <div class="container mt-4">
+                    ${generateUserDetails(report, key, logo=true, disabled=true)}
+                </div>
+
+                ${report?.description ? `
+                    <div class="container table-notes mt-4">
+                        <div class="row">
+                            <div class="col-12">
+                                <h4 class="fw-b">Notes:</h4>
+                                <p class="text-justify">${report?.description}</p>
+                            </div>
+                        </div>
+                    </div>
+                ` : ""}
+
+                */
+
+                /*
+                
+                ${paddock?.recommendations?.explanation && report?.description ? `
+                    <div class="page-break"></div>
+                    <div class="container table-notes mt-4">
+                        <div class="row">
+                            <div class="col-12">
+                                ${report['paddocks'][selectedPaddock]?.recommendations?.form_data?.nutrient_deficient?.length > 0 ? `
+                                    <p class="m-0 mt-3"><b>Recommended products for deficient nutrients:</b></p>
+                                    <ul class="m-0">${recommendedProductsDeficientTag}</ul>
+
+                                ` : ''}
+                            </div>
+                            <div class="col-12">
+                                <h4 class="fw-b">Notes:</h4>
+                                <p class="text-justify">${report.description}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    `: ''}
+                
+                */
+
+                // if (index !== paddocksWithTables.length - 1) {
+                //     pdfPage += `
+                //     <div class="page-break"></div>
+                //     `
+                // }
+
+            allPDFPages += pdfPage;
+        });
+
+        allPDFPages += `
+        </div>`;
+
+        // Create the main window
+        const html_template = `
+        <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>${report['title']}</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" id="bootstapCSS">
+                <link rel="stylesheet" href="{% static 'css/table.css' %}" id="tableCSS">
+            </head>
+            <body class="pdf-container">
+                <style>
+                    .table-header {
+                        background-color: #c0c0c0 !important;
+                        background: #c0c0c0 !important;
+                        font-weight: bold;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                        box-shadow: inset 0 0 0 1000px gray !important;
+
+                    }
+
+                    .table-header {
+                        background-color: #c0c0c0 !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                    
+                    .table-header th {
+                        background-color: #c0c0c0 !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                    
+                    .page-break{
+                        height: 0;
+                        page-break-before: always;
+                    }
+
+                    table {
+                        width: 100% !important;
+                        /* border-collapse: collapse !important; */
+                        border-collapse: separate !important;
+                        border-spacing: 0;
+
+                    }
+                    
+                    table tbody {
+                        border: 1px solid #1b1c1d !important;
+                    }
+
+                    table tr, table td, table th, table tbody {
+                        border: none !important;
+                        background: transparent !important;
+                        box-shadow: none !important;
+                        outline: none !important;
+
+                        padding: 1px 2px !important;
+                        font-size: 10px !important;
+                    }
+
+                    .table-header th:first-child,
+                    .table-header th:nth-child(2),
+                    .table-header th:nth-child(3),
+                    .table-header th:nth-child(4),
+                    .table-header th:nth-child(5),
+                    .table-header th:nth-child(6) {
+                        border-bottom: 2px solid #1b1c1d !important;
+                        border-right: 2px solid #1b1c1d !important;
+                        border-top: 2px solid #1b1c1d !important;
+                        boder-left: none !important;
+                    }
+
+                    .table-header th:nth-child(6) {
+                        border-left: 2px solid #1b1c1d !important;
+                    }
+
+                    tbody td:nth-child(1), tbody td:nth-child(2), tbody td:nth-child(3) {
+                        border: 1px solid #1b1c1d !important;
+                    }
+
+
+                    tbody td:nth-child(4), tbody td:nth-child(5), tbody td:nth-child(6) {
+                        border-top: none !important;
+                        border-bottom: none !important;
+                        border-left: 1px solid #1b1c1d !important;
+                        border-right: 1px solid #1b1c1d !important;
+                    }
+
+                    table tr:first-child td:nth-child(4),
+                    table tr:first-child td:nth-child(5),
+                    table tr:first-child td:nth-child(6) {
+                        border-top: 1px solid #1b1c1d !important;
+                    }
+
+                    table {
+                        border: 2px solid #1b1c1d !important;
+                    }
+
+                    table tr:last-child td:nth-child(4),
+                    table tr:last-child td:nth-child(5),
+                    table tr:last-child td:nth-child(6) {
+                        border-bottom: 1px solid #1b1c1d !important;
+                    }
+
+                    tr.base-saturations-header td:nth-child(1){
+                        border-bottom: none !important;
+                        border-top: none !important;
+                    }
+
+                    tr.base-saturations-header td:nth-child(2),
+                    tr.base-saturations-header td:nth-child(3),
+                    tr.base-saturations-header td:nth-child(4){
+                        border-top: none !important;
+                        border-bottom: none !important;
+                        border-left: 1px solid #1b1c1d !important;
+                        border-right: 1px solid #1b1c1d !important;
+                    }
+                    
+                    #userData__address_span{
+                        display: block !important;
+                        white-space: pre-wrap;
+                        height: max-content !important;
+                        font-size: 10px !important;
+                        font-family: 'Arial', sans-serif;
+                        font-weight: normal !important;
+                        color: #000 !important;
+                    }
+
+                    input, textarea, #userData__address_span {
+                        border: none !important;
+                        padding: 0 !important;
+                        font-size: 10px !important;
+                    }
+
+                    label {
+                        width: 90px !important;
+                    }
+                    
+                    textarea#userData__address {
+                        display: none !important;
+                    }
+
+                    .document-header-details .field-wrapper .field-name{
+                        width: 100px;
+                    }
+
+                    .document-header-details .field-wrapper{
+                        justify-content: space-between;
+                    }
+
+                    .user-details-header{
+                        width: 60%;
+                    }
+
+                    .document-header-details .field-wrapper{
+                        width: 90%;
+                    }
+
+                    .table-bordered > tbody > tr > td, .table-bordered > thead > tr > th {
+                        padding: 0px 2px !important;
+                    }
+
+                    .table-bordered > thead > tr > th, .table-bordered > tbody, .table-bordered > tfoot {
+                        border: 2px solid #000 !important;
+                    }
+
+                    .bar {
+                        left: 104% !important;
+                    }
+
+                </style>
+                ${allPDFPages}
+            </body>
+            </html>
+        `;
+        
+        // // Create a print window
+        // const pdfwindow = window.open('', '', 'width=800,height=600');
+        // pdfwindow.document.write(html_template);
+        // pdfwindow.document.close();
+                    
+
+        // pdfwindow.onload = () => {
+        //     pdfwindow.print();
+        //     setTimeout(() => {
+        //         pdfwindow.close();
+        //     }, 300);
+        // };
+
+        // Wokring --
+        // Create an iframe for printing
+        // const iframe = document.createElement('iframe');
+        // iframe.style.display = 'none';
+        // document.body.appendChild(iframe);
+
+        // const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        // iframeDoc.open();
+        // iframeDoc.write(html_template);
+        // // iframeDoc.title = report['title'];  // Set the title for the PDF filename
+        // iframeDoc.close();
+
+        // iframe.onload = () => {
+        //     iframe.contentWindow.focus(); // Make sure the iframe is focused for printing
+        //     iframe.contentWindow.print();
+        //     setTimeout(() => {
+        //         document.body.removeChild(iframe);
+        //     }, 300);
+        // };
+        // ---
+
+        // // Create a new div to hold the HTML content that will be converted to PDF
+        const pdfContent = document.createElement('div');
+        pdfContent.innerHTML = html_template;
+
+        // Convert HTML to PDF using html2pdf.js
+        html2pdf()
+            .from(pdfContent)
+            .set({
+                margin:       10,
+                filename:     'Soil_Analysis_Report.pdf',
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'] }
+            })
+            .toPdf()
+            .get('pdf')
+            .then(function(pdf) {
+                // Open the PDF in a new tab
+                const pdfUrl = pdf.output('bloburl');
+                const newTab = window.open(pdfUrl, '_blank');
+                if (newTab) {
+                    newTab.focus();
+                } else {
+                    alert("Please allow popups for this site.");
+                }
+            })
+            .save();
+
+
+
+        // const container = document.createElement('div');
+        // container.innerHTML = html_template;
+                
+        // const opt = {
+        //     margin: 10,
+        //     filename: 'Soil_Analysis_Report.pdf',
+        //     image: { type: 'jpeg', quality: 0.98 },
+        //     html2canvas: { 
+        //         scale: 2,
+        //         useCORS: true,
+        //         letterRendering: true
+        //     },
+        //     jsPDF: { 
+        //         unit: 'mm', 
+        //         format: 'a4', 
+        //         orientation: 'portrait'
+        //     }
+        // };
+
+        // // Use html2pdf to convert the element to PDF and trigger download
+        // html2pdf()
+        //     .from(container)
+        //     .set(opt)
+        //     // .toPdf()
+        //     // .get('pdf')
+        //     // .then((pdf) => {
+        //     //     // Add page numbers
+        //     //     // const totalPages = pdf.internal.getNumberOfPages();
+        //     //     // for (let i = 1; i <= totalPages; i++) {
+        //     //     //     pdf.setPage(i);
+        //     //     //     pdf.setFontSize(10);
+        //     //     //     pdf.text(`Page ${i} of ${totalPages}`, 
+        //     //     //         pdf.internal.pageSize.getWidth() - 1, 
+        //     //     //         pdf.internal.pageSize.getHeight() - 0.5);
+        //     //     // }
+        //     // })
+        //     .save();
+    }
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        // when the dashboard is loaded, set up the token in the cookies
+        // Check if the user is logged in using the token passed from the URL
+        const token = getQueryParam('token');
+        if (token) {setCookie('api_bearer', token, 365)}
+        
+        // Get the report data from the server
+        const user_data         = JSON.parse('{{ report|safe|escapejs }}');
+        report                  = user_data.report_data;
+        console.log(report);
+
+        // Show the loader
+        showLoader();
+
+        // Setting up form values
+        document.getElementById('soilCrop').value = report.soilCrop; 
+        document.getElementById('soilLabType').value = report.soilLabType;
+
+        // --------------------------- Populate the sample pairing table ---------------------------
+        report.sample_paddock_farm_assignments.forEach(assignment_row => {
+            const sample = assignment_row.sample;
+            const farm = assignment_row.farm;
+            const paddock = assignment_row.paddock;
+
+            const row = document.createElement('tr');
+
+            row.innerHTML = `
+                <td style="vertical-align: middle; text-align: center; font-weight: 100;">${sample}</td>
+                <td style="vertical-align: middle; text-align: center; font-weight: 100;">${farm || "No farm was assigned"}</td>
+                <td style="vertical-align: middle; text-align: center; font-weight: 100;">${paddock || "No paddock was assigned"}</td>
+            `;
+            document.getElementById('sample-assignment-tbody').appendChild(row);
+        });
+        document.getElementById('sampleAssignmentContent').style.display = 'block';
+
+        // --------------------------- Populate dropdown ---------------------------
+        populateTableSelectionDropdown(report?.paddocks)
+
+        // --------------------------- Recommendation form submission ---------------------------
+        let selectedPaddock = getSelectedPaddock();
+        // Get the explanation object
+        let explanationObj = report['paddocks'][selectedPaddock]["recommendations"]["explanation"];
+
+        // Initialize an empty string to store the formatted explanation
+        let formattedExplanation = "";
+
+        // Counter for numbering
+        let count = 1;
+
+        // Iterate through each key-value pair in the explanation object
+        for (const [key, value] of Object.entries(explanationObj)) {
+            formattedExplanation += `<p class="m-0" style="text-align: justify;">${count}. <b>${key}:</b> ${value}<br></p>`;
+            count++;
+        }
+
+        document.getElementById('recommendationFormResponse').innerHTML = `
+            <p class="m-0"><b>Nutrient explanation:</b></p>
+            ${formattedExplanation || '<p class="mb-0 mt-2">No explanation available.</p>'}
+        `;
+
+        // --------------------------- Clear the PDF Viewer ---------------------------
+        document.getElementById('pdf-viewer').innerHTML = ``;
+
+        // --------------------------- Populate the PDF Viewer ---------------------------
+        let userDataTag = generateUserDetails(report, paddock=null, logo=false, disabled=true);
+        document.getElementById('pdf-viewer').innerHTML += `<div class="pdf-viewer-table-wrapper">${userDataTag}</div>`;
+
+        // --------------------------- Generate tables for all data keys ---------------------------
+        for([key, val] of Object.entries(report?.paddocks)) {
+            document.getElementById('pdf-viewer').innerHTML += `<div class="pdf-viewer-table-wrapper" id="pdf-viewer-${key.replace(/ /g,"___")}">
+                <p>PADDOCK: ${key}</p>    
+                ${report?.paddocks[key]?.table ? report?.paddocks[key]?.table + "<br>" : ""}
+                ${report?.paddocks[key]?.tae_table ? report?.paddocks[key]?.tae_table + "<br>" : ""}
+                ${report?.paddocks[key]?.nutrient_ratios_table ? report?.paddocks[key]?.nutrient_ratios_table : ""}
+            </div>`; // no need to add "<br>" after the last table
+        }
+
+  
+        // Hide the loader
+        hideLoader();
+    });
+    document.getElementById("paddockDataSelect").addEventListener("change", function () {
+        // Get the explanation object
+        let explanationObj = report['paddocks'][this.value]["recommendations"]["explanation"];
+
+        // Initialize an empty string to store the formatted explanation
+        let formattedExplanation = "";
+
+        // Counter for numbering
+        let count = 1;
+
+        // Iterate through each key-value pair in the explanation object
+        for (const [key, value] of Object.entries(explanationObj)) {
+            formattedExplanation += `<p class="m-0" style="text-align: justify;">${count}. <b>${key}:</b> ${value}<br></p>`;
+            count++;
+        }
+
+        document.getElementById('recommendationFormResponse').innerHTML = `
+            <p class="m-0"><b>Nutrient explanation:</b></p>
+            ${formattedExplanation || '<p class="mb-0 mt-2">No explanation available.</p>'}
+        `;
+
+    })
+
+  // You could add functionality like filtering the table by Report ID using the search input
+</script>
+{% endblock %}

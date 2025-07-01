@@ -1,0 +1,71 @@
+<div class="dashboard-card-wrapper mb-4" id="{{ product_id }}-products-dashboard-card-wrapper">
+    <div class="dashboard-card mt-2 mb-3" id="{{ product_id }}-products-dashboard-card-{{ index }}">
+        <label for="chartDescription" class="secondary-font-color">Please select {{ product_id }} products:</label>
+        <p class="mb-0">Instructions:</p>
+        <ol>
+            <li class="text-justify">Search or select for the products from the search bar.</li>
+            <li class="text-justify">Once all products are selected, they will be updated automatically in the table below.</li>
+            <li class="text-justify">Add the necessary values in the table for each product.</li>
+            <li class="text-justify">To save the result, it is important to click on <b>Save & Calculate Cost</b> button, otherwise the data won't be saved in the final PDF.</li>
+            <li class="text-justify">It is important to select all products before changing the paddock chart, and saving the values by calculating the cost. <b>Once the paddock is changed, you won't be able to alter the products</b> and the table will be replaced with the products summary.</li>
+            <li class="text-justify">It is recommended to click on the <b>Save & Calculate Cost</b> button at the end of the procedure to make sure that the values are saved correctly.</li>
+        </ol>
+    
+        <div class="w-100">
+            <!-- <div class="w-100">
+                <p class="mb-0">Please write a short products description (this description is shared for both fertigation and foliar products):</p>
+                <p class="mb-1">To write bold text, please wrap the text with ** marks on both sides, for example **Nitrogen** will be displayed as <b>Nitrogen</b>.</p>
+                
+                <input type="text" class="form-control" id="{{ product_id }}-products-description">
+            </div> -->
+            <form action="" method="post" class="w-100"  id="{{ product_id }}-products-form-{{ index }}">
+                <div class="form-grid">
+                    <div class="row">
+                        <select data-placeholder="Begin typing a name to filter..." multiple class="chosen-select" id="{{ product_id }}-products-{{ index }}">
+                            <option value=""></option>
+                            <option> </option>
+                            <option> </option>
+                        </select>
+                    </div>
+                </div>                       
+            </form>
+        </div>
+        <div id="{{ product_id }}-products-table-wrapper-{{ index }}">
+            <table class="table borderless mt-3" id="{{ product_id }}-products-table-{{ index }}">
+                <thead class="table-header">
+                    <tr>
+                        <th class="text-center" style="border: 1px solid #000;">Product Name</th>
+                        <th class="text-center" style="border: 1px solid #000;">Size</th>
+                        <th class="text-center" style="border: 1px solid #000;">Rate</th>
+                        <th class="text-center" style="border: 1px solid #000;">Unit</th>                
+                    </tr>
+                </thead>
+                <tbody id="{{ product_id }}-products-table-body-{{ index }}">
+                </tbody>
+            </table>
+    
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <p class="m-0 w-100">Enter the total area (Hectares) or total volume (Liters of Water)</p>
+                <input style="width: 60%;" type="number" step="0.01" class="form-control" value="1" id="{{ product_id }}-products-table-area-treated-value-{{ index }}" >
+            </div>
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <p class="m-0 w-100">Select the unit for the area</p>
+                <select style="width: 58%;" class="form-select" id="{{ product_id }}-products-table-area-treated-units-{{ index }}" >
+                </select>
+            </div>
+        </div>
+        <div class="d-flex align-items-center justify-content-between mt-3" style="text-align: right !important;" id="{{ product_id }}-products-table-buttons-{{ index }}">
+            <p class="m-0" id="{{ product_id }}-products-total-products-cost-{{ index }}"></p>
+            <button type="" class="btn submit-btn px-4" onclick="calculateProductsCost('{{ product_id }}-products-{{ index }}')" id="{{ product_id }}-products-calculate-cost-btn-{{ index }}">
+                Save & Calculate Cost
+            </button>
+        </div>
+        <div id="{{ product_id }}-products-table-summary-{{ index }}"></div>
+    </div>
+    <div id="{{ product_id }}-products-add-more-button">
+        <p class="text-center fw-bold" style="cursor: pointer;" onclick="addMoreProducts('{{ product_id }}-products')">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000"><path d="M440-280h80v-160h160v-80H520v-160h-80v160H280v80h160v160Zm40 200q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>
+            Add more {{ product_id }} products
+        </p>
+    </div>
+</div>

@@ -1,0 +1,272 @@
+body {
+    background-color: #f7f7f9;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+.secondary-font-color{
+    color: #689f38;
+}
+.dashboard-card {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin: 0 auto 30px;
+    max-width: 100%;
+}
+.submit-btn {
+    background-color: #8BB439;
+    border: 1px solid #8BB439;
+    color: white;
+    border: none;
+}
+.submit-btn:hover {
+    background-color: #689f38;
+}
+
+.loader-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); /* semi-transparent black */
+    align-items: center;
+    justify-content: center;
+    z-index: 9999; /* make sure it’s on top */
+  }
+  
+.loader {
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+  }
+  /* Spinner animation */
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+.form-floating select {
+    padding: 11px !important;
+    height: auto !important;
+    min-height: 1px !important;
+}
+.auth-heading
+{
+    font-size: 22px;
+    font-weight: 700;
+}
+.auth-text
+{
+    font-size: 14px;
+    /* padding-bottom: 10px; */
+    /* border-bottom: 1px solid #ccc; */
+}
+.form-grid
+{
+    padding-top: 24px;
+}
+/* Make sure the label floats correctly */
+.form-floating .form-select {
+    height: auto; /* Match the height to the label's position */
+}
+/* Ensure the label floats when a valid value is selected or the field is focused */
+  .form-floating .form-select:focus, 
+  .form-floating .form-select:not(:placeholder-shown) {
+    border-color: #689f38; /* Optional: Highlight border color */
+}
+
+.form-floating .form-select:focus + label,
+.form-floating .form-select:not(:placeholder-shown) + label {
+    top: -14px;
+    font-size: 0.875rem;
+    color: #689f38;
+    font-weight: bold;
+    opacity: 1;
+}
+
+/* Optional: Adjust label color when the select is empty or not focused */
+
+/* Adjust the position of the label */
+.form-floating label {
+    transition: all 0.3s ease; /* Smooth transition for the label */
+}
+.header-wrapper
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #fff;
+    box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.1);
+}
+.header-logo img
+{
+    width: 70px;
+}
+.user-profile-image img
+{
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.back-button
+{
+    color: #8BB439;
+    font-size: 16px;
+    font-weight: bold;
+    display: inline-block;
+    margin: 20px 0;
+    text-decoration: none;
+}
+.cancel-btn
+{
+    color: #8BB439;
+    border: 1px solid #8BB439 !important;
+    background-color: #fff;
+    border: none;
+}
+.filename-input{
+    padding: 6px;
+    border: 1px solid #689f38;
+    border-radius: 8px;
+    width: 50%;
+}
+.chart-explanation-input{
+    width: 100%;
+    margin-top: 10px;
+}
+.multi-line-text{
+    white-space: pre-wrap;
+}
+.pdf-viewer-table-wrapper{
+    margin-bottom: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.text-align-right{
+    text-align: right;
+}
+.text-align-left{
+    text-align: left !important;
+}
+
+/* Chosen */
+.chosen-container{
+    width: 100% !important
+}
+
+/* The switch - the box around the slider */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* The slider */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: #689f38;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #689f38;
+}
+
+input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+@media only screen 
+and (min-device-width : 768px) 
+and (max-device-width : 1024px) 
+and (orientation : portrait) {
+    .user-details-header{
+        width: 130px !important;
+    }
+
+    .document-header-details .field-wrapper{
+        width: 100% !important;
+    }
+}
+
+.page-padding{
+    padding: 1rem 3rem !important;
+}
+
+.document-header-details-col{
+    display:  flex;
+}
+
+
+@media (max-width: 768px) {
+    .page-padding {
+        padding: 1rem 1.5rem !important;
+    }
+
+    .document-header-details{
+        width: 100%;
+    }
+
+    .document-header-details-col {
+        display: unset;
+    }
+
+    .pdf-viewer-table-wrapper{
+        width: fit-content;
+    }
+
+    .pdf-viewer {
+        overflow-x: auto !important;
+    }
+}

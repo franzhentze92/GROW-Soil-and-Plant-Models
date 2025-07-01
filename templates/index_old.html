@@ -1,0 +1,250 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crops Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <!-- Apple Touch Icon (for iOS devices) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"  />
+    <link rel="apple-touch-icon" href="{% static 'images/NTS Logo.webp' %}">
+    <!-- Apple Touch Icon for different sizes (optional for better resolution support) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/NTS Logo.webp' %}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'images/NTS Logo.webp' %}">
+    <link rel="apple-touch-icon" sizes="144x144" href="{% static 'images/NTS Logo.webp' %}">
+    <link rel="apple-touch-icon" sizes="120x120" href="{% static 'images/NTS Logo.webp' %}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <!-- Status Bar Style (controls how the iOS status bar looks when the app is opened) -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Other options for status bar: "black" or "default" -->
+    <!-- Set the name of the app as it will appear on the home screen -->
+    <meta name="apple-mobile-web-app-title" content="Leaf Analysis">
+    <!-- Optional: Set the background color for the splash screen -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Web App Manifest (optional, for more customization) -->
+    <link rel="manifest" href="{% static 'manifest.json' %}"> 
+    <!-- Optional: Set the theme color for browsers that support it (e.g., Chrome, Opera, Edge) -->
+    <!-- For good practice: Set the viewport for responsive design -->
+    <title>Crop Nutrition Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+    <div class="header-wrapper">
+        <div class="header-logo">
+            <img src="{% static 'images/nts_logo.jpeg' %}" alt="My image">
+        </div>
+        <div class="user-profile">
+            <div class="user-profile-image">
+                <img src="{% static 'images/nts_logo.jpeg' %}" alt="My image">
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <a href="https://gestion.ntsgrow.com" class="back-button"><i class="fas fa-chevron-left"></i> Back</a>
+        <div class="dashboard-card" style="width: fit-content; position: relative; top: 50%; -webkit-transform: translateY(-50%); -ms-transform: translateY(-50%); transform: translateY(-50%); ">
+            <!-- Tabs -->
+            <ul class="nav nav-tabs nutrition-tabs" id="nutritionTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <!-- <button class="nav-link active" id="soil-tab" data-bs-toggle="tab" data-bs-target="#soil-content"
+                        type="button" role="tab">Soil Therapy™</button> -->
+                    <button class="nav-link" onclick="window.location.href='/soil_analysis/'">
+                        Soil Therapy™
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <!-- <button class="nav-link" id="plant-tab" data-bs-toggle="tab" data-bs-target="#plant-content"
+                        type="button" role="tab">Plant Therapy™</button> -->
+                        <button class="nav-link" onclick="window.location.href='/plant-analysis/'">
+                            Plant Therapy™
+                        </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" onclick="window.location.href='/report-generation/'">
+                        Plant Therapy Report Generation™
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="crop-calculator-tab" data-bs-toggle="tab"
+                        data-bs-target="#crop-calculator-content" type="button" role="tab" disabled>Crop
+                        Calculators</button>
+                </li>
+            </ul>
+            <!-- Message Container -->
+            {% if messages %}
+            <div id="messageContainer">
+                {% for message in messages %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <!-- Tab Content -->
+            <!-- <div class="tab-content" id="nutritionTabsContent">
+                <div class="tab-pane fade show active" id="soil-content" role="tabpanel">
+                    <div class="loader" id="loader"></div>
+                    <div class="container" style="max-width: 800px">
+                        <form id="inputForm" action="{% url 'soil_analysis' %}" method="post"
+                            enctype="multipart/form-data">
+                            <h3 class="mb-2 auth-heading"><span>Soil Analysis Form</span></h3>
+                            <p class="auth-text mb-3">Streamline the soil analysis process with advanced automation tools that deliver precise data and actionable insights to enhance soil health and productivity.
+                            </p>
+                            <div class="form-grid">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="form-floating">
+                                                <select id="soilCrop" name="crop" class="form-select shadow-none">
+                                                    <option value="" disabled selected>Select a Crop</option>
+                                                    {% for crop in soil_crops %}
+                                                    <option value="{{ crop.id }}">{{ crop.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <label for="soilCrop" class="form-label">Select Crop:</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="form-floating">
+                                                <select id="soilLabType" name="lab_type"
+                                                    class="form-select shadow-none">
+                                                    <option value="">Select Lab Type</option>
+                                                    {% for lab_type in soil_lab_types %}
+                                                    <option value="{{ lab_type.id }}">{{ lab_type.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <label for="soilLabType" class="form-label">Lab Type:</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="fileInput" class="form-label">File Input: <strong>(Excel
+                                        Files)</strong></label>
+                                <input type="file" class="form-control" id="fileInput" name="fileInput" multiple
+                                    required />
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn cancel-btn px-4 me-2">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="btn submit-btn px-4" onclick="showLoader()">
+                                    Submit
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+                <div class="tab-pane fade" id="plant-content" role="tabpanel">
+                    <div class="loader" id="loader"></div>
+                    <div class="container" style="max-width: 800px">
+                        <form id="inputForm" action="{#% url 'fertilization' %#}" method="post"
+                            enctype="multipart/form-data">
+                            <h3 class="mb-2 auth-heading"><span>Leaf Analysis Form</span></h3>
+                            <p class="auth-text mb-3">Streamline the leaf analysis process with advanced automation tools that deliver precise data and actionable insights to enhance plant health and productivity.
+                            </p>
+                            <div class="form-grid">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="form-floating">
+                                                <select id="leafCropGroup" name="crop_group" class="form-select">
+                                                    <option value="">Select a Crop Group</option>
+                                                    {% for group in crop_groups %}
+                                                    <option value="{{ group.id }}">{{ group.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <label for="crop_group" class="form-label">Select Crop Group:</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="form-floating">
+                                                <select id="leafCrop" name="crop" class="form-select">
+                                                    <option value="">Select a Crop</option>
+                                                </select>
+                                                <label for="crop" class="form-label">Select Crop:</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <div class="form-floating">
+                                                <select id="plantLabType" name="lab_type" class="form-select">
+                                                    <option value="">Select Lab Type</option>
+                                                    {% for lab_type in plant_lab_types %}
+                                                    <option value="{{ lab_type.id }}">{{ lab_type.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <label for="lab_type" class="form-label">Lab Type:</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="fileInput" class="form-label">File Input:
+                                    <strong>(Image/CSV)</strong></label>
+                                <input type="file" class="form-control" id="fileInput" name="fileInput" required />
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn cancel-btn px-4 me-2">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="btn submit-btn px-4" onclick="showLoader()">
+                                    Submit
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div> -->
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
+        integrity="sha384-IQsoLXlHjGpG9iLW+itdG6vVDT3z7MV3pz6SMNfE1+tEZuJr+Po6w5hZ9GFsm+Y7"
+        crossorigin="anonymous"></script>
+    <script>
+        // Expose Django URL as a global variable
+        const urls = {
+            getCropsByGroup: "{% url 'get_crops_by_group' %}",
+        };
+    </script>
+    <script src="{% static 'js/custom.js' %}"></script>
+    <script>
+        // Auto-hide error messages after 5 seconds
+        document.addEventListener('DOMContentLoaded', function () {
+            const messageContainer = document.getElementById('messageContainer');
+            if (messageContainer) {
+                setTimeout(() => {
+                    messageContainer.style.transition = 'opacity 0.5s ease';
+                    messageContainer.style.opacity = '0';
+                    setTimeout(() => messageContainer.remove(), 500); // Remove after fade-out
+                }, 3000); // 3 seconds
+            }
+        });
+    </script>
+</body>
+
+</html>

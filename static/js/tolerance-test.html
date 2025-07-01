@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soil Therapy Tolerance System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-case {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .deficient { background-color: #ffebee; color: #c62828; }
+        .acceptable { background-color: #e8f5e8; color: #2e7d32; }
+        .excessive { background-color: #e3f2fd; color: #1565c0; }
+        .bar {
+            height: 20px;
+            margin: 5px 0;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e8f5e8;
+            border-radius: 5px;
+        }
+        input, select {
+            margin: 5px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌱 Soil Therapy Tolerance System Test</h1>
+        <p>This page demonstrates how the tolerance system affects nutrient status classification.</p>
+        
+        <div class="controls">
+            <h3>Configure Tolerance</h3>
+            <label>Nutrient: 
+                <select id="nutrientSelect">
+                    <option value="Calcium">Calcium</option>
+                    <option value="Magnesium">Magnesium</option>
+                    <option value="Potassium">Potassium</option>
+                    <option value="Phosphorus">Phosphorus</option>
+                    <option value="Sulfur">Sulfur</option>
+                </select>
+            </label>
+            <label>Tolerance Below (%): 
+                <input type="number" id="toleranceBelow" value="50" min="0" max="100">
+            </label>
+            <label>Tolerance Above (%): 
+                <input type="number" id="toleranceAbove" value="50" min="0" max="100">
+            </label>
+            <button onclick="updateTolerance()">Update Tolerance</button>
+        </div>
+
+        <div class="test-case">
+            <h3>Test Case 1: Calcium</h3>
+            <p><strong>Original Range:</strong> 100-200 ppm</p>
+            <p><strong>Current Value:</strong> 80 ppm</p>
+            <div id="result1" class="result"></div>
+            <div id="bar1" class="bar"></div>
+        </div>
+
+        <div class="test-case">
+            <h3>Test Case 2: Magnesium</h3>
+            <p><strong>Original Range:</strong> 50-100 ppm</p>
+            <p><strong>Current Value:</strong> 120 ppm</p>
+            <div id="result2" class="result"></div>
+            <div id="bar2" class="bar"></div>
+        </div>
+
+        <div class="test-case">
+            <h3>Test Case 3: Potassium</h3>
+            <p><strong>Original Range:</strong> 150-300 ppm</p>
+            <p><strong>Current Value:</strong> 200 ppm</p>
+            <div id="result3" class="result"></div>
+            <div id="bar3" class="bar"></div>
+        </div>
+
+        <div class="test-case">
+            <h3>Test Case 4: Phosphorus</h3>
+            <p><strong>Original Range:</strong> 20-40 ppm</p>
+            <p><strong>Current Value:</strong> 15 ppm</p>
+            <div id="result4" class="result"></div>
+            <div id="bar4" class="bar"></div>
+        </div>
+
+        <div class="test-case">
+            <h3>Test Case 5: Sulfur</h3>
+            <p><strong>Original Range:</strong> 10-25 ppm</p>
+            <p><strong>Current Value:</strong> 30 ppm</p>
+            <div id="result5" class="result"></div>
+            <div id="bar5" class="bar"></div>
+        </div>
+    </div>
+
+    <script>
+        // Simplified tolerance system for testing
+        const nutrientTolerance = new Proxy({}, {
+            get: () => ({ below: 0.5, above: 0.5 })
+        });
+
+        function applyToleranceToClassName(nutrientName, value, acceptableMin, acceptableMax) {
+            const min = parseFloat(acceptableMin);
+            const max = parseFloat(acceptableMax);
+            const val = parseFloat(value);
+            
+            if (isNaN(min) || isNaN(max) || isNaN(val)) {
+                return "acceptable";
+            }
+            
+            const tol = nutrientTolerance[nutrientName];
+            const greenMin = min * (1 - tol.below);
+            const greenMax = max * (1 + tol.above);
+            
+            console.log(`Tolerance for ${nutrientName}:`, {
+                original: { min, max, value: val },
+                tolerance: tol,
+                adjusted: { greenMin, greenMax }
+            });
+            
+            if (val < greenMin) {
+                return "deficient";
+            } else if (val > greenMax) {
+                return "excessive";
+            } else {
+                return "acceptable";
+            }
+        }
+
+        function getColorFromTolerance(className) {
+            const colors = {
+                'deficient': '#f44336',
+                'acceptable': '#4CAF50',
+                'excessive': '#2196F3'
+            };
+            return colors[className] || '#9E9E9E';
+        }
+
+        function updateTolerance() {
+            const nutrient = document.getElementById('nutrientSelect').value;
+            const below = parseFloat(document.getElementById('toleranceBelow').value) / 100;
+            const above = parseFloat(document.getElementById('toleranceAbove').value) / 100;
+            
+            nutrientTolerance[nutrient] = { below, above };
+            
+            console.log(`Updated tolerance for ${nutrient}:`, { below, above });
+            runTests();
+        }
+
+        function runTests() {
+            const testCases = [
+                { name: 'Calcium', min: 100, max: 200, value: 80, resultId: 'result1', barId: 'bar1' },
+                { name: 'Magnesium', min: 50, max: 100, value: 120, resultId: 'result2', barId: 'bar2' },
+                { name: 'Potassium', min: 150, max: 300, value: 200, resultId: 'result3', barId: 'bar3' },
+                { name: 'Phosphorus', min: 20, max: 40, value: 15, resultId: 'result4', barId: 'bar4' },
+                { name: 'Sulfur', min: 10, max: 25, value: 30, resultId: 'result5', barId: 'bar5' }
+            ];
+
+            testCases.forEach(testCase => {
+                const className = applyToleranceToClassName(testCase.name, testCase.value, testCase.min, testCase.max);
+                const color = getColorFromTolerance(className);
+                
+                const resultDiv = document.getElementById(testCase.resultId);
+                const barDiv = document.getElementById(testCase.barId);
+                
+                resultDiv.textContent = `Status: ${className.toUpperCase()}`;
+                resultDiv.className = `result ${className}`;
+                
+                barDiv.style.backgroundColor = color;
+                barDiv.textContent = `${testCase.name}: ${testCase.value} ppm`;
+            });
+        }
+
+        // Initialize tests
+        runTests();
+    </script>
+</body>
+</html> 

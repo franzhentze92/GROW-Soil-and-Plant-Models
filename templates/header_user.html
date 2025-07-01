@@ -1,0 +1,129 @@
+{% load static %}
+
+<style>
+    .navbar img {
+        width: 180px;
+    }
+    .cd_nav .navbar-nav{
+        gap: 12px;
+    }
+    .cd_nav li.nav-item {
+        /* background: #d7dbc7; */
+        border-radius: 20px;
+        min-width: 80px;
+        text-align: center;
+    }
+    .cd_nav li.nav-item a{
+        color: #5c5752;
+        padding: 7px;
+    }
+    /* .cd_nav li.nav-item.btn-custom{
+        background: #5c5752;
+    } */
+    .cd_nav li.nav-item.btn-custom {
+        background: #A1CD48;
+    }
+    .cd_nav li.nav-item.settings{
+        background: transparent;
+    }
+    .cd_nav li.nav-item a.nav-link{
+        /* color: #ffffff; */
+        color: #282C32;
+        font-weight: 600;
+    }
+    .cd_nav li.nav-item a.nav-link:hover{
+        color:#afd238;
+    }
+    .dropdown-item.active, .dropdown-item:active {
+        background-color: #A1CD48;
+    }
+
+    .disabled {
+        /* pointer-events: none; */ /* removed */
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.25);
+    }
+
+    .disabled:hover {
+        cursor: not-allowed !important;
+    }
+
+    @media(max-width: 991px){
+        .nav-container{
+            position: relative;
+        }
+        #navbarNavDropdown{
+            z-index: 99;
+            position: absolute;
+            background: #fff;
+            width: 100%;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            margin-top: 5px;
+            justify-items: flex-end;
+        }
+        .cd_nav li.nav-item a{
+            padding: 7px 25px;
+        }
+      }
+</style>
+
+<nav class="page-padding container-fluid navbar navbar-expand-lg">
+    <div class="w-100">
+        <!-- container -->
+        <div class="nav-container d-flex align-items-center justify-content-between w-100">
+            <span class="navbar-brand">
+                <!-- <img src="https://gestion.ntsgrow.com/assets/img/favicon/NTS_faviocon.png" alt=""> -->
+                <img src="{% static 'images/NTS Logo.webp' %}" style="max-width:80px">
+            </span>
+            
+            
+            <div class="d-flex align-items-center">
+                <div class="cd_nav">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="true" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="navbar-collapse rounded collapse show" id="navbarNavDropdown" style="">
+                    <ul class="navbar-nav">
+                    <!-- btn-custom -->
+                        <li class="nav-item">
+                        <a class="nav-link " aria-current="page" href="/soil_analysis/?role={{ role }}">Soil Therapy</a>
+                        </li>
+                        <li class="nav-item">
+                        <a class="nav-link" href="/plant-analysis/?role={{ role }}">Plant Therapy</a>
+                        </li>
+                        <li class="nav-item">
+                        <a class="nav-link disabled">Crop Calculators</a>
+                        </li>
+                        <li class="nav-item">
+                        <a class="nav-link" href="https://gestion.ntsgrow.com/" target="_blank" rel="noopener noreferrer">Back to my Hub</a>
+                        </li>
+                        <!-- <li class="nav-item dropdown settings">
+
+                            <img style="width: 31px; cursor: pointer;" src="/images/setting.png" alt="Profile Picture" class="rounded-circle dropdown-toggle" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="account-settings">
+                                        Settings
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="https://gestion.ntsgrow.com/logout" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                        Logout
+                                    </a>
+                                </li>
+                            </ul>
+                        
+                        </li> -->
+                    </ul>
+                    </div>
+                </div> 
+                
+                <!-- <span class="me-3">Franz Hentze</span> -->
+                <form id="logout-form" action="https://gestion.ntsgrow.com/logout" method="POST" style="display: none;">
+                    <input type="hidden" name="_token" value="YFIS0D1Y3DmRMSo4HHez3O16vZwWSmDvwO9Vmi6R" autocomplete="off">                </form> 
+            </div>
+        </div>
+    </div>
+</nav>

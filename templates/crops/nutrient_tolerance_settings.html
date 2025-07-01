@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nutrient Tolerance Settings - Plant Therapy Only{% endblock %}
+
+{% block content %}
+<style>
+.tolerance-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.tolerance-table th, .tolerance-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+}
+.tolerance-slider {
+  width: 120px;
+}
+.tolerance-label {
+  min-width: 40px;
+  display: inline-block;
+  font-weight: bold;
+}
+</style>
+
+<h2 class="mb-4">Plant Therapy - Nutrient Tolerance Settings</h2>
+<table class="tolerance-table">
+  <thead>
+    <tr>
+      <th>Nutrient</th>
+      <th>Deficient Threshold (%)</th>
+      <th>Excessive Threshold (%)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Nitrogen (N)</td>
+      <td>
+        <input type="range" min="0" max="50" value="20" class="form-range tolerance-slider" data-nutrient="N" data-type="below" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="N-below-label">20%</span>
+      </td>
+      <td>
+        <input type="range" min="0" max="50" value="30" class="form-range tolerance-slider" data-nutrient="N" data-type="above" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="N-above-label">30%</span>
+      </td>
+    </tr>
+    <tr>
+      <td>Phosphorus (P)</td>
+      <td>
+        <input type="range" min="0" max="50" value="25" class="form-range tolerance-slider" data-nutrient="P" data-type="below" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="P-below-label">25%</span>
+      </td>
+      <td>
+        <input type="range" min="0" max="50" value="25" class="form-range tolerance-slider" data-nutrient="P" data-type="above" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="P-above-label">25%</span>
+      </td>
+    </tr>
+    <tr>
+      <td>Potassium (K)</td>
+      <td>
+        <input type="range" min="0" max="50" value="20" class="form-range tolerance-slider" data-nutrient="K" data-type="below" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="K-below-label">20%</span>
+      </td>
+      <td>
+        <input type="range" min="0" max="50" value="35" class="form-range tolerance-slider" data-nutrient="K" data-type="above" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="K-above-label">35%</span>
+      </td>
+    </tr>
+    <tr>
+      <td>Calcium (Ca)</td>
+      <td>
+        <input type="range" min="0" max="50" value="15" class="form-range tolerance-slider" data-nutrient="Ca" data-type="below" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="Ca-below-label">15%</span>
+      </td>
+      <td>
+        <input type="range" min="0" max="50" value="35" class="form-range tolerance-slider" data-nutrient="Ca" data-type="above" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="Ca-above-label">35%</span>
+      </td>
+    </tr>
+    <tr>
+      <td>Magnesium (Mg)</td>
+      <td>
+        <input type="range" min="0" max="50" value="25" class="form-range tolerance-slider" data-nutrient="Mg" data-type="below" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="Mg-below-label">25%</span>
+      </td>
+      <td>
+        <input type="range" min="0" max="50" value="35" class="form-range tolerance-slider" data-nutrient="Mg" data-type="above" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="Mg-above-label">35%</span>
+      </td>
+    </tr>
+    <tr>
+      <td>Sulfur (S)</td>
+      <td>
+        <input type="range" min="0" max="50" value="25" class="form-range tolerance-slider" data-nutrient="S" data-type="below" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="S-below-label">25%</span>
+      </td>
+      <td>
+        <input type="range" min="0" max="50" value="25" class="form-range tolerance-slider" data-nutrient="S" data-type="above" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="S-above-label">25%</span>
+      </td>
+    </tr>
+    <tr>
+      <td>Sodium (Na)</td>
+      <td>
+        <input type="range" min="0" max="50" value="30" class="form-range tolerance-slider" data-nutrient="Na" data-type="below" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="Na-below-label">30%</span>
+      </td>
+      <td>
+        <input type="range" min="0" max="50" value="20" class="form-range tolerance-slider" data-nutrient="Na" data-type="above" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="Na-above-label">20%</span>
+      </td>
+    </tr>
+    <tr>
+      <td>Iron (Fe)</td>
+      <td>
+        <input type="range" min="0" max="50" value="20" class="form-range tolerance-slider" data-nutrient="Fe" data-type="below" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="Fe-below-label">20%</span>
+      </td>
+      <td>
+        <input type="range" min="0" max="50" value="30" class="form-range tolerance-slider" data-nutrient="Fe" data-type="above" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="Fe-above-label">30%</span>
+      </td>
+    </tr>
+    <tr>
+      <td>Manganese (Mn)</td>
+      <td>
+        <input type="range" min="0" max="50" value="20" class="form-range tolerance-slider" data-nutrient="Mn" data-type="below" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="Mn-below-label">20%</span>
+      </td>
+      <td>
+        <input type="range" min="0" max="50" value="30" class="form-range tolerance-slider" data-nutrient="Mn" data-type="above" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="Mn-above-label">30%</span>
+      </td>
+    </tr>
+    <tr>
+      <td>Zinc (Zn)</td>
+      <td>
+        <input type="range" min="0" max="50" value="25" class="form-range tolerance-slider" data-nutrient="Zn" data-type="below" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="Zn-below-label">25%</span>
+      </td>
+      <td>
+        <input type="range" min="0" max="50" value="25" class="form-range tolerance-slider" data-nutrient="Zn" data-type="above" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="Zn-above-label">25%</span>
+      </td>
+    </tr>
+    <tr>
+      <td>Copper (Cu)</td>
+      <td>
+        <input type="range" min="0" max="50" value="25" class="form-range tolerance-slider" data-nutrient="Cu" data-type="below" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="Cu-below-label">25%</span>
+      </td>
+      <td>
+        <input type="range" min="0" max="50" value="25" class="form-range tolerance-slider" data-nutrient="Cu" data-type="above" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="Cu-above-label">25%</span>
+      </td>
+    </tr>
+    <tr>
+      <td>Boron (B)</td>
+      <td>
+        <input type="range" min="0" max="50" value="20" class="form-range tolerance-slider" data-nutrient="B" data-type="below" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="B-below-label">20%</span>
+      </td>
+      <td>
+        <input type="range" min="0" max="50" value="30" class="form-range tolerance-slider" data-nutrient="B" data-type="above" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="B-above-label">30%</span>
+      </td>
+    </tr>
+    <tr>
+      <td>Molybdenum (Mo)</td>
+      <td>
+        <input type="range" min="0" max="50" value="30" class="form-range tolerance-slider" data-nutrient="Mo" data-type="below" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="Mo-below-label">30%</span>
+      </td>
+      <td>
+        <input type="range" min="0" max="50" value="20" class="form-range tolerance-slider" data-nutrient="Mo" data-type="above" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="Mo-above-label">20%</span>
+      </td>
+    </tr>
+    <tr>
+      <td>Silicon (Si)</td>
+      <td>
+        <input type="range" min="0" max="50" value="25" class="form-range tolerance-slider" data-nutrient="Si" data-type="below" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="Si-below-label">25%</span>
+      </td>
+      <td>
+        <input type="range" min="0" max="50" value="25" class="form-range tolerance-slider" data-nutrient="Si" data-type="above" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="Si-above-label">25%</span>
+      </td>
+    </tr>
+    <tr>
+      <td>Cobalt (Co)</td>
+      <td>
+        <input type="range" min="0" max="50" value="25" class="form-range tolerance-slider" data-nutrient="Co" data-type="below" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="Co-below-label">25%</span>
+      </td>
+      <td>
+        <input type="range" min="0" max="50" value="25" class="form-range tolerance-slider" data-nutrient="Co" data-type="above" oninput="updateToleranceLabel(this)">
+        <span class="tolerance-label" id="Co-above-label">25%</span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="mt-4">
+  <button type="button" class="btn btn-secondary" onclick="resetAllTolerancesToDefault()">Reset All to Default</button>
+  <button type="button" class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+</div>
+
+<script>
+function updateToleranceLabel(slider) {
+  const nutrient = slider.dataset.nutrient;
+  const type = slider.dataset.type;
+  document.getElementById(`${nutrient}-${type}-label`).textContent = slider.value + '%';
+}
+// Initialize all labels on page load
+window.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.tolerance-slider').forEach(slider => {
+    updateToleranceLabel(slider);
+  });
+});
+function resetAllTolerancesToDefault() {
+  const defaults = {
+    'N': { below: 20, above: 30 },
+    'P': { below: 25, above: 25 },
+    'K': { below: 20, above: 35 },
+    'Ca': { below: 15, above: 35 },
+    'Mg': { below: 25, above: 35 },
+    'S': { below: 25, above: 25 },
+    'Na': { below: 30, above: 20 },
+    'Fe': { below: 20, above: 30 },
+    'Mn': { below: 20, above: 30 },
+    'Zn': { below: 25, above: 25 },
+    'Cu': { below: 25, above: 25 },
+    'B': { below: 20, above: 30 },
+    'Mo': { below: 30, above: 20 },
+    'Si': { below: 25, above: 25 },
+    'Co': { below: 25, above: 25 }
+  };
+  Object.keys(defaults).forEach(nutrient => {
+    ['below', 'above'].forEach(type => {
+      const slider = document.querySelector(`input[data-nutrient='${nutrient}'][data-type='${type}']`);
+      if (slider) {
+        slider.value = defaults[nutrient][type];
+        updateToleranceLabel(slider);
+      }
+    });
+  });
+}
+function saveSettings() {
+  const settings = {};
+  document.querySelectorAll('.tolerance-slider').forEach(slider => {
+    const nutrient = slider.dataset.nutrient;
+    const type = slider.dataset.type;
+    const value = parseInt(slider.value, 10) / 100; // Store as decimal
+    if (!settings[nutrient]) settings[nutrient] = {};
+    settings[nutrient][type] = value;
+  });
+  localStorage.setItem('nutrientToleranceSettings', JSON.stringify(settings));
+  alert('Settings saved!');
+}
+</script>
+{% endblock %} 

@@ -1,0 +1,205 @@
+body {
+  background-color: #f7f7f9;
+  font-family: Arial, sans-serif;
+}
+
+.dashboard-card {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin: 0 auto 30px;
+  max-width: 100%;
+}
+.nutrition-tabs
+{
+  border-bottom: none;
+  gap: 0px;
+}
+.nutrition-tabs.nav-tabs li .nav-link
+{
+  border-radius: 0px;
+  border: 1px solid #ccc;
+  margin-right: 0px;
+}
+.nutrition-tabs.nav-tabs li:first-child
+{
+  margin-right: 0px;
+}
+.nutrition-tabs.nav-tabs li:first-child .nav-link
+{
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
+  border: 1px solid #ccc;
+  border-right: 1px solid transparent;
+}
+.nutrition-tabs.nav-tabs li:last-child .nav-link
+{
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+  border: 1px solid #ccc;
+  border-left: 1px solid transparent;
+}
+.nutrition-tabs.nav-tabs .nav-link
+#irrigation-tab {
+  color: white;
+}
+.nav-tabs {
+  justify-content: center;
+  /* Center align tabs */
+}
+.nav-tabs .nav-link
+{
+  color: #8BB439;
+}
+.nav-tabs .nav-link.active {
+  color: #5fb100 !important ;
+  background-color: #c7ff8736;
+  border-color: #5fb100 !important;
+  color: white;
+}
+
+
+.submit-btn {
+  background-color: #8BB439;
+  border: 1px solid #8BB439;
+  color: white;
+  border: none;
+}
+
+.submit-btn:hover {
+  background-color: #689f38;
+}
+
+.loader-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* semi-transparent black */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999; /* make sure it’s on top */
+}
+
+.loader {
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+}
+/* Spinner animation */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.mt-4 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.floating-select
+{
+  appearance: none;
+}
+.form-floating select {
+    padding: 11px !important;
+    height: auto !important;
+    min-height: 1px !important;
+}
+.auth-heading
+{
+    font-size: 22px;
+    font-weight: 700;
+}
+.auth-text
+{
+    font-size: 14px;
+}
+.form-grid
+{
+    border-top: 1px solid #ccc;
+    padding-top: 24px;
+}
+/* Make sure the label floats correctly */
+.form-floating .form-select {
+  height: auto; /* Match the height to the label's position */
+}
+
+/* Ensure the label floats when a valid value is selected or the field is focused */
+.form-floating .form-select:focus, 
+.form-floating .form-select:not(:placeholder-shown) {
+  border-color: #689f38; /* Optional: Highlight border color */
+}
+
+.form-floating .form-select:focus + label,
+.form-floating .form-select:not(:placeholder-shown) + label {
+  top: -14px;
+  font-size: 0.875rem;
+  color: #689f38;
+  font-weight: bold;
+  opacity: 1;
+}
+
+/* Optional: Adjust label color when the select is empty or not focused */
+.form-floating .form-select:not(:focus):not(:valid) + label {
+  color: #6c757d; /* Neutral color when the select is not focused */
+}
+
+/* Adjust the position of the label */
+.form-floating label {
+  transition: all 0.3s ease; /* Smooth transition for the label */
+}
+.header-wrapper
+{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: #fff;
+  box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.1);
+}
+.header-logo img
+{
+  width: 70px;
+}
+.user-profile-image img
+{
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.back-button
+{
+  color: #8BB439;
+  font-size: 16px;
+  font-weight: bold;
+  display: inline-block;
+  margin: 20px 0;
+  text-decoration: none;
+}
+.cancel-btn
+{
+  color: #8BB439;
+  border: 1px solid #8BB439 !important;
+  background-color: #fff;
+  border: none;
+}

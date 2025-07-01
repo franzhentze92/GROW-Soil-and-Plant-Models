@@ -1,0 +1,302 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <!-- Apple Touch Icon (for iOS devices) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"  />
+    <link rel="apple-touch-icon" href="{% static 'images/NTS Logo.webp' %}">
+    <!-- Apple Touch Icon for different sizes (optional for better resolution support) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/NTS Logo.webp' %}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'images/NTS Logo.webp' %}">
+    <link rel="apple-touch-icon" sizes="144x144" href="{% static 'images/NTS Logo.webp' %}">
+    <link rel="apple-touch-icon" sizes="120x120" href="{% static 'images/NTS Logo.webp' %}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <!-- Status Bar Style (controls how the iOS status bar looks when the app is opened) -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Other options for status bar: "black" or "default" -->
+    <!-- Set the name of the app as it will appear on the home screen -->
+    <meta name="apple-mobile-web-app-title" content="Leaf Analysis">
+    <!-- Optional: Set the background color for the splash screen -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Web App Manifest (optional, for more customization) -->
+    <link rel="manifest" href="{% static 'manifest.json' %}"> 
+    <!-- Optional: Set the theme color for browsers that support it (e.g., Chrome, Opera, Edge) -->
+    <!-- For good practice: Set the viewport for responsive design -->
+    <title>Crop Nutrition Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/reporting.css' %}">
+</head>
+<style>
+    .dashboard-button {
+        cursor: pointer;
+        margin: 5px;
+        min-height: 170px;
+        height: max-content;
+        flex: 1 1 23%; /* 4 items per row on desktop */
+        box-sizing: border-box;
+    }
+
+    .box-header{
+        height: 50px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .dashboard-button:hover { 
+        border: 1px solid #689f38;
+    }
+
+    .dashboard-button-disabled { 
+        border-color: #eee;
+        opacity: 0.6;
+        cursor: unset;
+    }
+
+    .text-justify {
+        text-align: justify;
+    }
+</style>
+
+<body>
+    <!-- <div class="header-wrapper">
+        <div class="header-logo">
+            <img src="{% static 'images/nts_logo.jpeg' %}" alt="My image">
+        </div>
+        <div class="user-profile">
+            <div class="user-profile-image">
+                <img src="{% static 'images/nts_logo.jpeg' %}" alt="My image">
+            </div>
+        </div>
+    </div> --> 
+    <div class="page-padding container-fluid">
+        <div class="row">
+            <div class="col-12">
+                {% if role != 'user' %}
+                    <a href="https://agronomy.ntsgrow.com/" class="back-button" target="_top"><i class="fas fa-chevron-left"></i> Back</a>
+                {% else %}
+                    <a href="https://gestion.ntsgrow.com/" class="back-button" target="_top"><i class="fas fa-chevron-left"></i> Back</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="row mt-3">
+            {% if role == "user"%}
+                <!-- <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card h-100" onclick="window.location.href='/soil_analysis/?role={{ role }}'">
+                        <img src="{% static 'images/nts_logo.jpeg' %}" alt="" class="card-img-top">
+                        <div class="card-body">
+                            <h5 class="card-title">Soil Therapy™</h5>
+                            <p class="card-text">Unlock your soil's potential with tailored nutrient insights.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card h-100" onclick="window.location.href='/plant-analysis/?role={{ role }}'">
+                        <img src="{% static 'images/nts_logo.jpeg' %}" alt="" class="card-img-top">
+                        <div class="card-body">
+                            <h5 class="card-title">Plant Therapy™</h5>
+                            <p class="card-text">Identify and address in-crop deficiencies with precision.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card h-100 dashboard-button-disabled">
+                        <img src="{% static 'images/nts_logo.jpeg' %}" alt="" class="card-img-top">
+                        <div class="card-body">
+                            <h5 class="card-title">Crop Calculators (coming soon)</h5>
+                            <p class="card-text">Quickly compute inputs like compost, nutrient breakdowns, etc.</p>
+                        </div>
+                    </div>
+                </div> -->
+
+                <!-- To hide the section below later when other changes go live -->
+                <style>
+                    .dashboard-button-disabled { 
+                        border-color: #eee;
+                        opacity: 0.6;
+                        cursor: unset;
+                        margin: 5px;
+                        min-height: 170px;
+                        height: max-content;
+                        flex: 1 1 23%;
+                        box-sizing: border-box;
+                    }
+                    
+                    .dashboard-button,
+                    .dashboard-button-disabled {
+                        flex: 1 1 calc(20% - 23px); /* 4 per row with gap accounted for */
+                        max-width: calc(20% - 23px);
+                    }
+
+                    @media (max-width: 768px) {
+                        /* Mobile View: 1 item per row */
+                        .dashboard-button,
+                        .dashboard-button-disabled {
+                            flex: 1 1 100%; /* full width */
+                            min-height: fit-content;
+                            max-width: unset;
+                        }
+                    }
+                </style>
+
+                <span class="dashboard-card dashboard-button" onclick="window.location.href='/soil-analysis/?role={{ role }}&token={{ token }}'">
+                    <div class="text-center box-header">Soil Therapy™</div>
+                    <div class="text-justify">Unlock your soil's potential with tailored nutrient insights.</div>
+                </span>
+                <span class="dashboard-card dashboard-button" onclick="window.location.href='/plant-analysis/?role={{ role }}&token={{ token }}'">
+                    <div class="text-center box-header">Plant Therapy™</div>
+                    <div class="text-justify">Identify and address in-crop deficiencies with precision.</div>
+                </span>
+                <span class="dashboard-card dashboard-button" onclick="window.location.href='/analysis-submissions/?type=soil&role={{ role }}&token={{ token }}'">
+                    <div class="text-center box-header">View Soil Therapy Submissions</div>
+                    <div class="text-justify">View previously submitted soil therapy analysis reports.</div>
+                </span>
+                <span class="dashboard-card dashboard-button" onclick="window.location.href='/analysis-submissions/?type=plant&role={{ role }}&token={{ token }}'">
+                    <div class="text-center box-header">View Plant Therapy Submissions</div>
+                    <div class="text-justify">View previously submitted plant therapy analysis reports.</div>
+                </span>
+
+                <span class="dashboard-card dashboard-button" onclick="window.location.href='/analysis-analytics/?type=soil&role={{ role }}&token={{ token }}'">
+                    <div class="text-center box-header">View Soil Therapy Analysis</div>
+                    <div class="text-justify">Analyse previously submitted soil therapy analysis reports.</div>
+                </span>
+                <span class="dashboard-card dashboard-button" onclick="window.location.href='/analysis-analytics/?type=plant&role={{ role }}&token={{ token }}'">
+                    <div class="text-center box-header">View Plant Therapy Analysis</div>
+                    <div class="text-justify">Analyse previously submitted plant therapy analysis reports.</div>
+                </span>
+
+                <span class="dashboard-card dashboard-button-disabled">
+                    <div class="text-center box-header">Crop Calculators (coming soon)</div>
+                    <div class="text-justify">Quickly compute inputs like compost, nutrient breakdowns, etc.</div>
+                </span>
+
+            {% else %}
+                <style>
+                    .dashboard-button-disabled { 
+                        border-color: #eee;
+                        opacity: 0.6;
+                        cursor: unset;
+                        margin: 5px;
+                        min-height: 170px;
+                        height: max-content;
+                        flex: 1 1 23%;
+                        box-sizing: border-box;
+                    }
+                    
+                    .dashboard-button,
+                    .dashboard-button-disabled {
+                        flex: 1 1 calc(20% - 23px); /* 4 per row with gap accounted for */
+                        max-width: calc(20% - 23px);
+                    }
+
+                    @media (max-width: 768px) {
+                        /* Mobile View: 1 item per row */
+                        .dashboard-button,
+                        .dashboard-button-disabled {
+                            flex: 1 1 100%; /* full width */
+                            min-height: fit-content;
+                            max-width: unset;
+                        }
+                    }
+                </style>
+
+                <span class="dashboard-card dashboard-button" onclick="window.location.href='/soil-analysis/?role={{ role }}&token={{ token }}'">
+                    <div class="text-center box-header">Soil Therapy™</div>
+                    <div class="text-justify">Unlock your soil's potential with tailored nutrient insights.</div>
+                </span>
+                <span class="dashboard-card dashboard-button" onclick="window.location.href='/plant-analysis/?role={{ role }}&token={{ token }}'">
+                    <div class="text-center box-header">Plant Therapy™</div>
+                    <div class="text-justify">Identify and address in-crop deficiencies with precision.</div>
+                </span>
+                <span class="dashboard-card dashboard-button" onclick="window.location.href='/report-generation/?role=agronomist&token={{ token }}'">
+                    <div class="text-center box-header">Plant Therapy Report Generation™</div>
+                    <div class="text-justify">Identify and address in-crop deficiencies with precision.</div>
+                </span>
+                <span class="dashboard-card dashboard-button" onclick="window.location.href='/analysis-submissions/?type=plant_report&role={{ role }}&token={{ token }}'">
+                    <div class="text-center box-header">View Plant Therapy Report Generation Submissions</div>
+                    <div class="text-justify">View previously submitted plant therapy reports.</div>
+                </span>
+                
+                <span class="dashboard-card dashboard-button-disabled">
+                    <div class="text-center box-header">Soil Therapy Report Generation™ (coming soon)</div>
+                    <div class="text-justify">Generate a clear, actionable report from your soil test results.</div>
+                </span>
+                <span class="dashboard-card dashboard-button-disabled">
+                    <div class="text-center box-header">Crop Calculators (coming soon)</div>
+                    <div class="text-justify">Quickly compute inputs like compost, nutrient breakdowns, etc.</div>
+                </span>
+            {% endif %}
+    
+            </div>
+    </div>
+
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"
+        integrity="sha384-IQsoLXlHjGpG9iLW+itdG6vVDT3z7MV3pz6SMNfE1+tEZuJr+Po6w5hZ9GFsm+Y7"
+        crossorigin="anonymous"></script> -->
+    <!-- <script>
+        // Expose Django URL as a global variable
+        const urls = {
+            getCropsByGroup: "{% url 'get_crops_by_group' %}",
+        };
+    </script> -->
+    <!-- <script src="{% static 'js/custom.js' %}"></script> -->
+    
+</body>
+
+<script>
+    // Function to get query parameter by name
+    function getQueryParam(name) { 
+        const params = new URLSearchParams(window.location.search); 
+        return params.get(name);    
+    }
+
+    // Function to set the value of a cookie
+    function setCookie(name,value,days) {
+        var expires = "";
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days*24*60*60*1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+    }
+
+    // Function to get the value of a cookie
+    function getCookie(name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0;i < ca.length;i++) {
+            var c = ca[i];
+            while (c.charAt(0)==' ') c = c.substring(1,c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+        }
+        return null;
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const token = getQueryParam('token');
+
+        if (token) {
+            setCookie('api_bearer', token, 365);
+        }
+    });
+
+</script>
+
+</html>
